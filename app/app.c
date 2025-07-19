@@ -440,6 +440,9 @@ static void HandleFunction(void)
 
 		case FUNCTION_BAND_SCOPE:
 			break;
+		
+		case FUNCTION_N_ELEM:
+			break;
 	}
 }
 
