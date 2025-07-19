@@ -204,7 +204,7 @@ SIZE = arm-none-eabi-size
 AUTHOR_STRING ?= EGZUMER
 # the user might not have/want git installed
 # can set own version string here (max 7 chars)
-VERSION_STRING := SV2RSR_MOD
+VERSION_STRING := EA5IUE_MOD
 
 
 ASFLAGS = -c -mcpu=cortex-m0
