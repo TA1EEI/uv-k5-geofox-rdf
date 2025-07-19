@@ -388,29 +388,59 @@ Skip:
 			break;
 	}
 }
-
-static void HandlePowerSave()
+#ifdef ENABLE_TX_WHEN_AM
+uint8_t calculateRFSignalPower(uint8_t amplitude, uint8_t maxPower, uint8_t carrierPercentage) 
 {
-	if (!gRxIdleMode) {
-		CheckForIncoming();
-	}
+  if (carrierPercentage == 0) {
+    return (uint8_t)((amplitude * maxPower) / 255);
+  }
+  uint8_t carrierAmplitude = (carrierPercentage * maxPower) / 100;
+  uint8_t modulationDepth = maxPower - carrierAmplitude;
+  return carrierAmplitude + (modulationDepth * amplitude / 255);
 }
-
-static void (*HandleFunction_fn_table[])(void) = {
-	[FUNCTION_FOREGROUND] = &CheckForIncoming,
-	[FUNCTION_TRANSMIT] = &FUNCTION_NOP,
-	[FUNCTION_MONITOR] = &FUNCTION_NOP,
-	[FUNCTION_INCOMING] = &HandleIncoming,
-	[FUNCTION_RECEIVE] = &HandleReceive,
-	[FUNCTION_POWER_SAVE] = &HandlePowerSave,
-	[FUNCTION_BAND_SCOPE] = &FUNCTION_NOP,
-};
-
-static_assert(ARRAY_SIZE(HandleFunction_fn_table) == FUNCTION_N_ELEM);
-
+#endif
 static void HandleFunction(void)
 {
-	HandleFunction_fn_table[gCurrentFunction]();
+	switch (gCurrentFunction)
+	{
+		case FUNCTION_FOREGROUND:
+			CheckForIncoming();
+			break;
+
+		case FUNCTION_TRANSMIT:
+#ifdef ENABLE_TX_WHEN_AM
+			if (gCurrentVfo->Modulation == MODULATION_USB || gCurrentVfo->Modulation == MODULATION_AM) {
+				uint8_t val = BK4819_GetVoiceAmplitudeOut() >> 7;
+				if (gCurrentVfo->Modulation == MODULATION_USB) {
+					val = calculateRFSignalPower(val, gCurrentVfo->TXP_CalculatedSetting, 0);
+				}
+				else {
+					val = calculateRFSignalPower(val, gCurrentVfo->TXP_CalculatedSetting, 50);
+				}
+				BK4819_SetupPowerAmplifier(val, gCurrentVfo->pTX->Frequency);
+			}
+#endif
+			break;
+
+		case FUNCTION_MONITOR:
+			break;
+
+		case FUNCTION_INCOMING:
+			HandleIncoming();
+			break;
+
+		case FUNCTION_RECEIVE:
+			HandleReceive();
+			break;
+
+		case FUNCTION_POWER_SAVE:
+			if (!gRxIdleMode)
+				CheckForIncoming();
+			break;
+
+		case FUNCTION_BAND_SCOPE:
+			break;
+	}
 }
 
 void APP_StartListening(FUNCTION_Type_t function)
@@ -817,8 +847,9 @@ void APP_Update(void)
 
 	if (gReducedService)
 		return;
-
+#ifndef ENABLE_TX_WHEN_AM
 	if (gCurrentFunction != FUNCTION_TRANSMIT)
+#endif
 		HandleFunction();
 
 #ifdef ENABLE_FMRADIO
