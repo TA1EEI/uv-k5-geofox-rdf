@@ -106,6 +106,7 @@ void UI_DisplayLock(void)
 								if ((gEeprom.POWER_ON_PASSWORD) == Password)
 								{
 									AUDIO_PlayBeep(BEEP_1KHZ_60MS_OPTIONAL);
+									gKeyBeingHeld = false;
 									return;
 								}
 
