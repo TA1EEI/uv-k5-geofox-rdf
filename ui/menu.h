@@ -24,7 +24,7 @@
 #include "settings.h"
 
 typedef struct {
-	const char  name[7];    // menu display area only has room for 6 characters
+    char  name[7];    // menu display area only has room for 6 characters
 	VOICE_ID_t  voice_id;
 	uint8_t     menu_id;
 } t_menu_item;
@@ -123,11 +123,14 @@ enum
 	MENU_F2SHRT,
 	MENU_F2LONG,
 	MENU_MLONG,
+#ifdef ENABLE_LANG_TR
+	MENU_LANG,
+#endif
 	MENU_BATTYP
 };
 
 extern const uint8_t FIRST_HIDDEN_MENU_ITEM;
-extern const t_menu_item MenuList[];
+extern t_menu_item MenuList[];
 
 extern const char        gSubMenu_TXP[3][5];
 extern const char        gSubMenu_SFT_D[3][4];
@@ -158,7 +161,7 @@ extern const char        gSubMenu_RX_TX[4][6];
 extern const char        gSubMenu_BAT_TXT[3][8];
 extern const char 		 gSubMenu_BATTYP[2][9];
 extern const char        gSubMenu_SCRAMBLER[11][7];
-
+extern const char 		 gSubMenu_LANG[2][3];
 typedef struct {char* name; uint8_t id;} t_sidefunction;
 extern const uint8_t 		 gSubMenu_SIDEFUNCTIONS_size;
 extern const t_sidefunction gSubMenu_SIDEFUNCTIONS[];
@@ -176,5 +179,6 @@ extern int               edit_index;
 void UI_DisplayMenu(void);
 int UI_MENU_GetCurrentMenuId();
 uint8_t UI_MENU_GetMenuIdx(uint8_t id);
+void UI_Menu_BindLanguage(void);
 
 #endif

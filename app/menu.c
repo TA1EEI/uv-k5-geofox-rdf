@@ -41,6 +41,7 @@
 #include "ui/inputbox.h"
 #include "ui/menu.h"
 #include "ui/ui.h"
+#include "ui/language.h"
 
 #ifndef ARRAY_SIZE
 	#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
@@ -171,7 +172,12 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 				*pMax = ARRAY_SIZE(gSubMenu_VOICE) - 1;
 				break;
 		#endif
-
+		#ifdef ENABLE_LANG_TR
+			case MENU_LANG:
+				*pMin = 0;
+				*pMax = ARRAY_SIZE(gSubMenu_LANG) - 1;
+				break;
+		#endif
 		case MENU_SC_REV:
 			*pMin = 0;
 			*pMax = ARRAY_SIZE(gSubMenu_SC_REV) - 1;
@@ -559,7 +565,17 @@ void MENU_AcceptSetting(void)
 				gUpdateStatus        = true;
 				break;
 		#endif
-
+		#ifdef ENABLE_LANG_TR
+			case MENU_LANG:
+				gEeprom.LANG_LEVEL = gSubMenuSelection;
+				UI_Language_InitFromEEPROM();
+				UI_Menu_BindLanguage();
+				gUpdateDisplay = true;
+				gFlagRefreshSetting = true;
+				gRequestSaveSettings = true;
+				break;
+		#endif
+	
 		case MENU_SC_REV:
 			gEeprom.SCAN_RESUME_MODE = gSubMenuSelection;
 			break;
@@ -963,7 +979,11 @@ void MENU_ShowCurrentSetting(void)
 			gSubMenuSelection = gEeprom.VOICE_PROMPT;
 			break;
 #endif
-
+#ifdef ENABLE_LANG_TR
+		case MENU_LANG:
+			gSubMenuSelection = gEeprom.LANG_LEVEL;
+			break;
+#endif
 		case MENU_SC_REV:
 			gSubMenuSelection = gEeprom.SCAN_RESUME_MODE;
 			break;

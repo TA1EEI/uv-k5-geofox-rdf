@@ -35,9 +35,10 @@
 #include "inputbox.h"
 #include "menu.h"
 #include "ui.h"
+#include "ui/language.h"
 
 
-const t_menu_item MenuList[] =
+t_menu_item MenuList[] =
 {
 //   text,     voice ID,                               menu ID
 	{"Step",   VOICE_ID_FREQUENCY_STEP,                MENU_STEP          },
@@ -90,6 +91,9 @@ const t_menu_item MenuList[] =
 #ifdef ENABLE_VOICE
 	{"Voice",  VOICE_ID_VOICE_PROMPT,                  MENU_VOICE         },
 #endif
+#ifdef ENABLE_LANG_TR
+    {"Lang", VOICE_ID_INVALID,                     MENU_LANG   		  },
+#endif
 	{"Roger",  VOICE_ID_INVALID,                       MENU_ROGER         },
 	{"STE",    VOICE_ID_INVALID,                       MENU_STE           },
 	{"RP STE", VOICE_ID_INVALID,                       MENU_RP_STE        },
@@ -138,9 +142,21 @@ const t_menu_item MenuList[] =
 	{"BatCal", VOICE_ID_INVALID,                       MENU_BATCAL        }, // battery voltage calibration
 	{"BatTyp", VOICE_ID_INVALID,                       MENU_BATTYP        }, // battery type 1600/2200mAh
 	{"Reset",  VOICE_ID_INITIALISATION,                MENU_RESET         }, // might be better to move this to the hidden menu items ?
-
 	{"",       VOICE_ID_INVALID,                       0xff               }  // end of list - DO NOT delete or move this this
 };
+
+
+void UI_Menu_BindLanguage(void)
+{
+#ifdef ENABLE_LANG_TR
+    for (uint8_t i = 0; MenuList[i].name[0] != '\0'; i++)
+    {
+        const char *translated = UI_Language_GetMenuText(i);
+        if (translated && strlen(translated) > 0)
+            strncpy(MenuList[i].name, translated, sizeof(MenuList[i].name) - 1);
+    }
+#endif
+}
 
 const uint8_t FIRST_HIDDEN_MENU_ITEM = MENU_F_LOCK;
 
@@ -333,6 +349,13 @@ const char gSubMenu_SCRAMBLER[][7] =
 	"3400Hz",
 	"3500Hz"
 };
+
+#ifdef ENABLE_LANG_TR
+const char gSubMenu_LANG[2][3] = {
+    "EN",
+    "TR"
+};
+#endif
 
 const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
 {
@@ -709,6 +732,12 @@ void UI_DisplayMenu(void)
 			case MENU_VOICE:
 				strcpy(String, gSubMenu_VOICE[gSubMenuSelection]);
 				break;
+		#endif
+		
+		#ifdef ENABLE_LANG_TR
+    		case MENU_LANG:
+        		strcpy(String, gSubMenu_LANG[gSubMenuSelection]);
+        		break;
 		#endif
 
 		case MENU_SC_REV:
