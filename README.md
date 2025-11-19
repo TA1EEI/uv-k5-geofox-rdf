@@ -8,6 +8,7 @@ All is a cloned and customized version of DualTachyon's open firmware found [her
 
 > [!WARNING]  
 > Use this firmware at your own risk (entirely). There is absolutely no guarantee that it will work in any way shape or form on your radio(s), it may even brick your radio(s), in which case, you'd need to buy another radio.
+> BEFORE STARTING, CHECK YOUR HARDWARE VERSION: Remove the battery from the back and look at the label. **If it says v3, do NOT flash this firmware** as it will permanently brick your radio and render it unusable.
 Anyway, have fun.
 
 ## Table of Contents
