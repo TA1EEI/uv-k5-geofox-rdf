@@ -389,7 +389,7 @@ void UI_DisplayMain(void)
 			}
 #endif
 
-
+#ifdef ENABLE_DTMF
 			if (gDTMF_InputMode
 #ifdef ENABLE_DTMF_CALLING
 				|| gDTMF_CallState != DTMF_CALL_STATE_NONE || gDTMF_IsTx
@@ -434,6 +434,7 @@ void UI_DisplayMain(void)
 				center_line = CENTER_LINE_IN_USE;
 				continue;
 			}
+#endif
 
 			// highlight the selected/used VFO with a marker
 			if (isMainVFO)
@@ -798,6 +799,7 @@ void UI_DisplayMain(void)
 #endif
 		if (rx || gCurrentFunction == FUNCTION_FOREGROUND || gCurrentFunction == FUNCTION_POWER_SAVE)
 		{
+#ifdef ENABLE_DTMF
 			#if 1
 				if (gSetting_live_DTMF_decoder && gDTMF_RX_live[0] != 0)
 				{	// show live DTMF decode
@@ -832,9 +834,13 @@ void UI_DisplayMain(void)
 					UI_PrintStringSmallNormal(String, 2, 0, 3);
 				}
 			#endif
+#endif
 
 #ifdef ENABLE_SHOW_CHARGE_LEVEL
-			else if (gChargingWithTypeC)
+#ifdef ENABLE_DTMF
+			else
+#endif
+			if (gChargingWithTypeC)
 			{	// charging .. show the battery state
 				if (gScreenToDisplay != DISPLAY_MAIN
 #ifdef ENABLE_DTMF_CALLING

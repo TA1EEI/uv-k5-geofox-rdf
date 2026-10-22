@@ -764,8 +764,10 @@ void RADIO_SetupRegisters(bool switchToForeground)
 	// RX expander
 	BK4819_SetCompander((gRxVfo->Modulation == MODULATION_FM && gRxVfo->Compander >= 2) ? gRxVfo->Compander : 0);
 
+#ifdef ENABLE_DTMF
 	BK4819_EnableDTMF();
 	InterruptMask |= BK4819_REG_3F_DTMF_5TONE_FOUND;
+#endif
 
 	RADIO_SetupAGC(gRxVfo->Modulation == MODULATION_AM, false);
 
@@ -1136,7 +1138,11 @@ void RADIO_SendEndOfTransmission(void)
 	if (gTxVfo->Modulation != MODULATION_USB) {
 #endif
 	BK4819_PlayRoger();
+#ifdef ENABLE_DTMF
 	DTMF_SendEndOfTransmission();
+#else
+	BK4819_ExitDTMF_TX(true);
+#endif
 
 	// send the CTCSS/DCS tail tone - allows the receivers to mute the usual FM squelch tail/crash
 	if(gEeprom.TAIL_TONE_ELIMINATION)

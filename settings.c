@@ -130,7 +130,7 @@ void SETTINGS_InitEEPROM(void)
 	// 0EA0..0EA7
 	EEPROM_ReadBuffer(0x0EA0, Data, 8);
 	#ifdef ENABLE_VOICE
-	gEeprom.VOICE_PROMPT = (Data[0] < 3) ? Data[0] : VOICE_PROMPT_ENGLISH;
+	gEeprom.VOICE_PROMPT = Data[0] != 0;
 	#endif
 	#ifdef ENABLE_RSSI_BAR
 		if((Data[1] < 200 && Data[1] > 90) && (Data[2] < Data[1]-9 && Data[1] < 160  && Data[2] > 50)) {
@@ -201,6 +201,7 @@ void SETTINGS_InitEEPROM(void)
 	}
 #endif
 
+#ifdef ENABLE_DTMF
 	// 0EF8..0F07
 	EEPROM_ReadBuffer(0x0EF8, Data, sizeof(gEeprom.DTMF_UP_CODE));
 	if (DTMF_ValidateCodes((char *)Data, sizeof(gEeprom.DTMF_UP_CODE))) {
@@ -216,6 +217,7 @@ void SETTINGS_InitEEPROM(void)
 	} else {
 		strcpy(gEeprom.DTMF_DOWN_CODE, "54321");
 	}
+#endif
 
 	// 0F18..0F1F
 	EEPROM_ReadBuffer(0x0F18, Data, 8);
@@ -541,7 +543,7 @@ void SETTINGS_SaveSettings(void)
 
 	memset(State, 0xFF, sizeof(State));
 #ifdef ENABLE_VOICE
-	State[0] = gEeprom.VOICE_PROMPT;
+	State[0] = gEeprom.VOICE_PROMPT ? 2 : 0;	// 2 = ENG on older firmware
 #endif
 #ifdef ENABLE_RSSI_BAR
 	State[1] = gEeprom.S0_LEVEL;

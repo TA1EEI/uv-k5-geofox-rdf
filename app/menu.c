@@ -177,13 +177,6 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 			*pMax = ARRAY_SIZE(gSubMenu_RXMode) - 1;
 			break;
 
-		#ifdef ENABLE_VOICE
-			case MENU_VOICE:
-				*pMin = 0;
-				*pMax = ARRAY_SIZE(gSubMenu_VOICE) - 1;
-				break;
-		#endif
-
 		case MENU_SC_REV:
 			*pMin = 0;
 			*pMax = ARRAY_SIZE(gSubMenu_SC_REV) - 1;
@@ -241,17 +234,22 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 		#ifdef ENABLE_AUDIO_BAR
 			case MENU_MIC_BAR:
 		#endif
+		#ifdef ENABLE_VOICE
+			case MENU_VOICE:
+		#endif
 		case MENU_BCL:
 		case MENU_BEEP:
 		case MENU_AUTOLK:
 		case MENU_S_ADD1:
 		case MENU_S_ADD2:
 		case MENU_STE:
+#ifdef ENABLE_DTMF
 		case MENU_D_ST:
 #ifdef ENABLE_DTMF_CALLING
 		case MENU_D_DCD:
 #endif
 		case MENU_D_LIVE_DEC:
+#endif
 		#ifdef ENABLE_NOAA
 			case MENU_NOAA_S:
 		#endif
@@ -322,10 +320,12 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 			*pMax = ARRAY_SIZE(gSubMenu_D_RSP) - 1;
 			break;
 #endif
+#ifdef ENABLE_DTMF
 		case MENU_PTT_ID:
 			*pMin = 0;
 			*pMax = ARRAY_SIZE(gSubMenu_PTT_ID) - 1;
 			break;
+#endif
 
 		case MENU_BAT_TXT:
 			*pMin = 0;
@@ -338,10 +338,12 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 			*pMax = 60;
 			break;
 #endif
+#ifdef ENABLE_DTMF
 		case MENU_D_PRE:
 			*pMin = 3;
 			*pMax = 99;
 			break;
+#endif
 
 #ifdef ENABLE_DTMF_CALLING
 		case MENU_D_LIST:
@@ -699,9 +701,11 @@ void MENU_AcceptSetting(void)
 				break;
 		#endif
 
+#ifdef ENABLE_DTMF
 		case MENU_D_ST:
 			gEeprom.DTMF_SIDE_TONE = gSubMenuSelection;
 			break;
+#endif
 
 #ifdef ENABLE_DTMF_CALLING
 		case MENU_D_RSP:
@@ -712,6 +716,7 @@ void MENU_AcceptSetting(void)
 			gEeprom.DTMF_auto_reset_time = gSubMenuSelection;
 			break;
 #endif
+#ifdef ENABLE_DTMF
 		case MENU_D_PRE:
 			gEeprom.DTMF_PRELOAD_TIME = gSubMenuSelection * 10;
 			break;
@@ -720,6 +725,7 @@ void MENU_AcceptSetting(void)
 			gTxVfo->DTMF_PTT_ID_TX_MODE = gSubMenuSelection;
 			gRequestSaveChannel         = 1;
 			return;
+#endif
 
 		case MENU_BAT_TXT:
 			gSetting_battery_text = gSubMenuSelection;
@@ -733,6 +739,7 @@ void MENU_AcceptSetting(void)
 			return;
 #endif
 
+#ifdef ENABLE_DTMF
 		case MENU_D_LIVE_DEC:
 			gSetting_live_DTMF_decoder = gSubMenuSelection;
 			gDTMF_RX_live_timeout = 0;
@@ -742,6 +749,7 @@ void MENU_AcceptSetting(void)
 			gFlagReconfigureVfos     = true;
 			gUpdateStatus            = true;
 			break;
+#endif
 
 #ifdef ENABLE_DTMF_CALLING
 		case MENU_D_LIST:
@@ -1215,9 +1223,11 @@ void MENU_ShowCurrentSetting(void)
 				break;
 		#endif
 
+#ifdef ENABLE_DTMF
 		case MENU_D_ST:
 			gSubMenuSelection = gEeprom.DTMF_SIDE_TONE;
 			break;
+#endif
 
 #ifdef ENABLE_DTMF_CALLING
 		case MENU_D_RSP:
@@ -1228,6 +1238,7 @@ void MENU_ShowCurrentSetting(void)
 			gSubMenuSelection = gEeprom.DTMF_auto_reset_time;
 			break;
 #endif
+#ifdef ENABLE_DTMF
 		case MENU_D_PRE:
 			gSubMenuSelection = gEeprom.DTMF_PRELOAD_TIME / 10;
 			break;
@@ -1235,6 +1246,7 @@ void MENU_ShowCurrentSetting(void)
 		case MENU_PTT_ID:
 			gSubMenuSelection = gTxVfo->DTMF_PTT_ID_TX_MODE;
 			break;
+#endif
 
 		case MENU_BAT_TXT:
 			gSubMenuSelection = gSetting_battery_text;
@@ -1249,9 +1261,11 @@ void MENU_ShowCurrentSetting(void)
 			gSubMenuSelection = gDTMF_chosen_contact + 1;
 			break;
 #endif
+#ifdef ENABLE_DTMF
 		case MENU_D_LIVE_DEC:
 			gSubMenuSelection = gSetting_live_DTMF_decoder;
 			break;
+#endif
 
 		case MENU_PONMSG:
 			gSubMenuSelection = gEeprom.POWER_ON_DISPLAY_MODE;
@@ -1656,6 +1670,7 @@ static void MENU_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
 			if (UI_MENU_GetCurrentMenuId() != MENU_SCR)
 				gAnotherVoiceID = MenuList[gMenuCursor].voice_id;
 		#endif
+#ifdef ENABLE_DTMF
         if (UI_MENU_GetCurrentMenuId() == MENU_UPCODE 
 			|| UI_MENU_GetCurrentMenuId() == MENU_DWCODE 
 #ifdef ENABLE_DTMF_CALLING 
@@ -1663,6 +1678,7 @@ static void MENU_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
 #endif
 			)
             return;
+#endif
 		#if 1
 			if (UI_MENU_GetCurrentMenuId() == MENU_DEL_CH || UI_MENU_GetCurrentMenuId() == MENU_MEM_NAME)
 				if (!RADIO_CheckValidChannel(gSubMenuSelection, false, 0))

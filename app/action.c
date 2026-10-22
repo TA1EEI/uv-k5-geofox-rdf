@@ -240,8 +240,10 @@ void ACTION_Scan(bool bRestart)
 #ifdef ENABLE_DTMF_CALLING
 	DTMF_clear_RX();
 #endif
+#ifdef ENABLE_DTMF
 	gDTMF_RX_live_timeout = 0;
 	memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
+#endif
 
 	RADIO_SelectVfos();
 
@@ -331,6 +333,7 @@ void ACTION_SwitchFilter(void)
 
 void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
+#ifdef ENABLE_DTMF
 	if (gScreenToDisplay == DISPLAY_MAIN && gDTMF_InputMode){
 		 // entering DTMF code
 
@@ -359,6 +362,7 @@ void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 #endif
 		return;
 	}
+#endif
 
 	enum ACTION_OPT_t funcShort = ACTION_OPT_NONE;
 	enum ACTION_OPT_t funcLong  = ACTION_OPT_NONE;
@@ -544,6 +548,16 @@ static void ACTION_AlarmOr1750(const bool b1750)
 
 #endif
 
+#ifdef ENABLE_VOICE
+// queue "VOX" followed by "ON"/"OFF"; 0xFE tells APP to play the queue as-is
+static void PlayVoxOnOff(bool on)
+{
+	AUDIO_SetVoiceID(0, VOICE_ID_VOX);
+	AUDIO_SetVoiceID(1, on ? VOICE_ID_ON : VOICE_ID_OFF);
+	gAnotherVoiceID = (VOICE_ID_t)0xFE;
+}
+#endif
+
 #ifdef ENABLE_VOX
 void ACTION_Vox(void)
 {
@@ -553,7 +567,7 @@ void ACTION_Vox(void)
 	gUpdateStatus        = true;
 
 	#ifdef ENABLE_VOICE
-		gAnotherVoiceID  = VOICE_ID_VOX;
+		PlayVoxOnOff(gEeprom.VOX_SWITCH);
 	#endif
 }
 #endif
@@ -565,6 +579,9 @@ void ACTION_VoxOrCwBreakIn(void)
 		gEeprom.CW_BREAKIN_ENABLE = !gEeprom.CW_BREAKIN_ENABLE;
 		gRequestSaveSettings      = true;
 		gUpdateStatus             = true;
+		#ifdef ENABLE_VOICE
+			PlayVoxOnOff(gEeprom.CW_BREAKIN_ENABLE);
+		#endif
 		return;
 	}
 #endif

@@ -8,17 +8,18 @@ ENABLE_UART                   ?= 1
 ENABLE_AIRCOPY                ?= 0
 ENABLE_FMRADIO                ?= 0
 ENABLE_NOAA                   ?= 0
-ENABLE_VOICE                  ?= 0
+ENABLE_VOICE                  ?= 1
 ENABLE_VOX                    ?= 0
 ENABLE_ALARM                  ?= 0
 ENABLE_TX1750                 ?= 0
 ENABLE_PWRON_PASSWORD         ?= 0
+ENABLE_DTMF                   ?= 0
 ENABLE_DTMF_CALLING           ?= 0
 ENABLE_FLASHLIGHT             ?= 1
 
 # ---- CUSTOM MODS ----
-ENABLE_BIG_FREQ               ?= 1
-ENABLE_SMALL_BOLD             ?= 1
+ENABLE_BIG_FREQ               ?= 0
+ENABLE_SMALL_BOLD             ?= 0
 ENABLE_CUSTOM_MENU_LAYOUT     ?= 1
 ENABLE_KEEP_MEM_NAME          ?= 1
 ENABLE_WIDE_RX                ?= 1
@@ -39,7 +40,7 @@ ENABLE_SPECTRUM               ?= 0
 ENABLE_REDUCE_LOW_MID_TX_POWER?= 0
 ENABLE_BYP_RAW_DEMODULATORS   ?= 0
 ENABLE_BLMIN_TMP_OFF          ?= 0
-ENABLE_SCAN_RANGES            ?= 1
+ENABLE_SCAN_RANGES            ?= 0
 ENABLE_CW_MODULATOR           ?= 1
 ENABLE_CODE_PRACTICE          ?= 1
 ENABLE_MILLIS                 ?= 0
@@ -79,6 +80,12 @@ endif
 ifeq ($(ENABLE_CODE_PRACTICE),1)
 ifeq ($(ENABLE_CW_MODULATOR),0)
 $(error ENABLE_CODE_PRACTICE requires ENABLE_CW_MODULATOR)
+endif
+endif
+
+ifeq ($(ENABLE_DTMF_CALLING),1)
+ifeq ($(ENABLE_DTMF),0)
+$(error ENABLE_DTMF_CALLING requires ENABLE_DTMF)
 endif
 endif
 
@@ -150,7 +157,9 @@ endif
 OBJS += app/app.o
 OBJS += app/chFrScanner.o
 OBJS += app/common.o
-OBJS += app/dtmf.o
+ifeq ($(ENABLE_DTMF),1)
+	OBJS += app/dtmf.o
+endif
 ifeq ($(ENABLE_FLASHLIGHT),1)
 	OBJS += app/flashlight.o
 endif
@@ -411,6 +420,9 @@ ifeq ($(ENABLE_MILLIS),1)
 endif
 ifeq ($(ENABLE_EXTRA_FILTER),1)
 	CFLAGS  += -DENABLE_EXTRA_FILTER
+endif
+ifeq ($(ENABLE_DTMF),1)
+	CFLAGS  += -DENABLE_DTMF
 endif
 ifeq ($(ENABLE_DTMF_CALLING),1)
 	CFLAGS  += -DENABLE_DTMF_CALLING

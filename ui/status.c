@@ -100,7 +100,7 @@ void UI_DisplayStatus()
 
 #ifdef ENABLE_VOICE
 	// VOICE indicator
-	if (gEeprom.VOICE_PROMPT != VOICE_PROMPT_OFF){
+	if (gEeprom.VOICE_PROMPT){
 		memcpy(line + x, BITMAP_VoicePrompt, sizeof(BITMAP_VoicePrompt));
 		x1 = x + sizeof(BITMAP_VoicePrompt);
 	}

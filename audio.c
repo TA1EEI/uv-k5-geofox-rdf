@@ -175,18 +175,6 @@ void AUDIO_PlayBeep(BEEP_Type_t Beep)
 
 #ifdef ENABLE_VOICE
 
-static const uint8_t VoiceClipLengthChinese[58] =
-{
-	0x32, 0x32, 0x32, 0x37, 0x37, 0x32, 0x32, 0x32,
-	0x32, 0x37, 0x37, 0x32, 0x64, 0x64, 0x64, 0x64,
-	0x64, 0x69, 0x64, 0x69, 0x5A, 0x5F, 0x5F, 0x64,
-	0x64, 0x69, 0x64, 0x64, 0x69, 0x69, 0x69, 0x64,
-	0x64, 0x6E, 0x69, 0x5F, 0x64, 0x64, 0x64, 0x69,
-	0x69, 0x69, 0x64, 0x69, 0x64, 0x64, 0x55, 0x5F,
-	0x5A, 0x4B, 0x4B, 0x46, 0x46, 0x69, 0x64, 0x6E,
-	0x5A, 0x64,
-};
-
 static const uint8_t VoiceClipLengthEnglish[76] =
 {
 	0x50, 0x32, 0x2D, 0x2D, 0x2D, 0x37, 0x37, 0x37,
@@ -240,24 +228,13 @@ void AUDIO_PlaySingleVoice(bool bFlag)
 
 	VoiceID = gVoiceID[0];
 
-	if (gEeprom.VOICE_PROMPT != VOICE_PROMPT_OFF && gVoiceWriteIndex > 0)
+	if (gEeprom.VOICE_PROMPT && gVoiceWriteIndex > 0)
 	{
-		if (gEeprom.VOICE_PROMPT == VOICE_PROMPT_CHINESE)
-		{	// Chinese
-			if (VoiceID >= ARRAY_SIZE(VoiceClipLengthChinese))
-				goto Bailout;
+		if (VoiceID >= ARRAY_SIZE(VoiceClipLengthEnglish))
+			goto Bailout;
 
-			Delay    = VoiceClipLengthChinese[VoiceID];
-			VoiceID += VOICE_ID_CHI_BASE;
-		}
-		else
-		{	// English
-			if (VoiceID >= ARRAY_SIZE(VoiceClipLengthEnglish))
-				goto Bailout;
-
-			Delay    = VoiceClipLengthEnglish[VoiceID];
-			VoiceID += VOICE_ID_ENG_BASE;
-		}
+		Delay    = VoiceClipLengthEnglish[VoiceID];
+		VoiceID += VOICE_ID_ENG_BASE;
 
 		if (FUNCTION_IsRx())   // 1of11
 			BK4819_SetAF(BK4819_AF_MUTE);
@@ -378,29 +355,16 @@ void AUDIO_PlayQueuedVoice(void)
 
 	Skip = false;
 
-	if (gVoiceReadIndex != gVoiceWriteIndex && gEeprom.VOICE_PROMPT != VOICE_PROMPT_OFF)
+	if (gVoiceReadIndex != gVoiceWriteIndex && gEeprom.VOICE_PROMPT)
 	{
 		VoiceID = gVoiceID[gVoiceReadIndex];
-		if (gEeprom.VOICE_PROMPT == VOICE_PROMPT_CHINESE)
+		if (VoiceID < ARRAY_SIZE(VoiceClipLengthEnglish))
 		{
-			if (VoiceID < ARRAY_SIZE(VoiceClipLengthChinese))
-			{
-				Delay = VoiceClipLengthChinese[VoiceID];
-				VoiceID += VOICE_ID_CHI_BASE;
-			}
-			else
-				Skip = true;
+			Delay = VoiceClipLengthEnglish[VoiceID];
+			VoiceID += VOICE_ID_ENG_BASE;
 		}
 		else
-		{
-			if (VoiceID < ARRAY_SIZE(VoiceClipLengthEnglish))
-			{
-				Delay = VoiceClipLengthEnglish[VoiceID];
-				VoiceID += VOICE_ID_ENG_BASE;
-			}
-			else
-				Skip = true;
-		}
+			Skip = true;
 
 		gVoiceReadIndex++;
 

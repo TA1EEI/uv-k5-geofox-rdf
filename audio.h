@@ -45,7 +45,6 @@ void AUDIO_PlayBeep(BEEP_Type_t Beep);
 
 enum
 {
-	VOICE_ID_CHI_BASE = 0x10U,
 	VOICE_ID_ENG_BASE = 0x60U,
 };
 

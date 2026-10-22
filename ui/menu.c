@@ -104,20 +104,26 @@ const t_menu_item MenuList[] =
 #ifdef ENABLE_DTMF_CALLING
 	{"ANI ID", VOICE_ID_ANI_CODE,                      MENU_ANI_ID        },
 #endif
+#ifdef ENABLE_DTMF
 	{"UPCode", VOICE_ID_INVALID,                       MENU_UPCODE        },
 	{"DWCode", VOICE_ID_INVALID,                       MENU_DWCODE        },
 	{"PTT ID", VOICE_ID_INVALID,                       MENU_PTT_ID        },
 	{"D ST",   VOICE_ID_INVALID,                       MENU_D_ST          },
+#endif
 #ifdef ENABLE_DTMF_CALLING
     {"D Resp", VOICE_ID_INVALID,                       MENU_D_RSP         },
 	{"D Hold", VOICE_ID_INVALID,                       MENU_D_HOLD        },
 #endif
+#ifdef ENABLE_DTMF
 	{"D Prel", VOICE_ID_INVALID,                       MENU_D_PRE         },
+#endif
 #ifdef ENABLE_DTMF_CALLING
 	{"D Decd", VOICE_ID_INVALID,                       MENU_D_DCD         },
 	{"D List", VOICE_ID_INVALID,                       MENU_D_LIST        },
 #endif
+#ifdef ENABLE_DTMF
 	{"D Live", VOICE_ID_INVALID,                       MENU_D_LIVE_DEC    }, // live DTMF decoder
+#endif
 #ifdef ENABLE_AM_FIX
 	{"AM Fix", VOICE_ID_INVALID,                       MENU_AM_FIX        },
 #endif
@@ -227,15 +233,6 @@ const char* const gSubMenu_RXMode[] =
 	"CROSS\nBAND", 		// TX on main, RX on secondary
 	"MAIN TX\nDUAL RX" 	// always TX on main, but RX on both
 };
-
-#ifdef ENABLE_VOICE
-	const char gSubMenu_VOICE[][4] =
-	{
-		"OFF",
-		"CHI",
-		"ENG"
-	};
-#endif
 
 const char gSubMenu_SC_REV[][8] =
 {
@@ -684,16 +681,21 @@ void UI_DisplayMenu(void)
 		#ifdef ENABLE_AM_FIX
 			case MENU_AM_FIX:
 		#endif
+		#ifdef ENABLE_VOICE
+			case MENU_VOICE:
+		#endif
 		case MENU_BCL:
 		case MENU_BEEP:
 		case MENU_S_ADD1:
 		case MENU_S_ADD2:
 		case MENU_STE:
+#ifdef ENABLE_DTMF
 		case MENU_D_ST:
 #ifdef ENABLE_DTMF_CALLING
 		case MENU_D_DCD:
 #endif
 		case MENU_D_LIVE_DEC:
+#endif
 		#ifdef ENABLE_NOAA
 			case MENU_NOAA_S:
 		#endif
@@ -774,12 +776,6 @@ void UI_DisplayMenu(void)
 			strcpy(String, gSubMenu_TOT[gSubMenuSelection]);
 			break;
 
-		#ifdef ENABLE_VOICE
-			case MENU_VOICE:
-				strcpy(String, gSubMenu_VOICE[gSubMenuSelection]);
-				break;
-		#endif
-
 		case MENU_SC_REV:
 			strcpy(String, gSubMenu_SC_REV[gSubMenuSelection]);
 			break;
@@ -813,6 +809,7 @@ void UI_DisplayMenu(void)
 			strcpy(String, gEeprom.ANI_DTMF_ID);
 			break;
 #endif
+#ifdef ENABLE_DTMF
 		case MENU_UPCODE:
 			sprintf(String, "%.8s\n%.8s", gEeprom.DTMF_UP_CODE, gEeprom.DTMF_UP_CODE + 8);
 			break;
@@ -820,6 +817,7 @@ void UI_DisplayMenu(void)
 		case MENU_DWCODE:
 			sprintf(String, "%.8s\n%.8s", gEeprom.DTMF_DOWN_CODE, gEeprom.DTMF_DOWN_CODE + 8);
 			break;
+#endif
 
 #ifdef ENABLE_DTMF_CALLING
 		case MENU_D_RSP:
@@ -830,6 +828,7 @@ void UI_DisplayMenu(void)
 			sprintf(String, "%ds", gSubMenuSelection);
 			break;
 #endif
+#ifdef ENABLE_DTMF
 		case MENU_D_PRE:
 			sprintf(String, "%d*10ms", gSubMenuSelection);
 			break;
@@ -837,6 +836,7 @@ void UI_DisplayMenu(void)
 		case MENU_PTT_ID:
 			strcpy(String, gSubMenu_PTT_ID[gSubMenuSelection]);
 			break;
+#endif
 
 		case MENU_BAT_TXT:
 			strcpy(String, gSubMenu_BAT_TXT[gSubMenuSelection]);

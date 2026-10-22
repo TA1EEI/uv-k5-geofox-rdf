@@ -626,6 +626,7 @@ static void CheckRadioInterrupts(void)
 //		if (ctcss_shift > 0)
 //			g_CTCSS_Lost = true;
 
+#ifdef ENABLE_DTMF
 		if (interrupts.dtmf5ToneFound) {	
 			const char c = DTMF_GetCharacter(BK4819_GetDTMF_5TONE_Code()); // save the RX'ed DTMF character
 			if (c != 0xff) {
@@ -660,6 +661,7 @@ static void CheckRadioInterrupts(void)
 				}
 			}
 		}
+#endif
 
 		if (interrupts.cssTailFound)
 			g_CxCSS_TAIL_Found = true;
@@ -1303,6 +1305,7 @@ void APP_TimeSlice10ms(void)
 
 void cancelUserInputModes(void)
 {
+#ifdef ENABLE_DTMF
 	if (gDTMF_InputMode || gDTMF_InputBox_Index > 0)
 	{
 		DTMF_clear_input_box();
@@ -1310,6 +1313,7 @@ void cancelUserInputModes(void)
 		gRequestDisplayScreen = DISPLAY_MAIN;
 		gUpdateDisplay        = true;
 	}
+#endif
 
 	if (gWasFKeyPressed || gKeyInputCountdown > 0 || gInputBoxIndex > 0)
 	{
@@ -1348,6 +1352,7 @@ void APP_TimeSlice500ms(void)
 		}
 	}
 
+#ifdef ENABLE_DTMF
 	if (gDTMF_RX_live_timeout > 0)
 	{
 		#ifdef ENABLE_RSSI_BAR
@@ -1365,6 +1370,7 @@ void APP_TimeSlice500ms(void)
 			}
 		}
 	}
+#endif
 
 	if (gMenuCountdown > 0) {
 #ifdef ENABLE_CW_MODULATOR
@@ -1470,7 +1476,10 @@ void APP_TimeSlice500ms(void)
 		&& gScreenToDisplay != DISPLAY_AIRCOPY
 #endif
 	) {
-		if (gEeprom.AUTO_KEYPAD_LOCK && gKeyLockCountdown > 0 && !gDTMF_InputMode
+		if (gEeprom.AUTO_KEYPAD_LOCK && gKeyLockCountdown > 0
+#ifdef ENABLE_DTMF
+			&& !gDTMF_InputMode
+#endif
 			&& gScreenToDisplay != DISPLAY_MENU
 #ifdef ENABLE_CODE_PRACTICE
 			&& !gCW_CpoActive
@@ -1488,7 +1497,11 @@ void APP_TimeSlice500ms(void)
 				BACKLIGHT_TurnOff();
 			}
 
-			if (gInputBoxIndex > 0 || gDTMF_InputMode) {
+			if (gInputBoxIndex > 0
+#ifdef ENABLE_DTMF
+				|| gDTMF_InputMode
+#endif
+			) {
 				AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
 			}
 /*
@@ -1501,7 +1514,9 @@ void APP_TimeSlice500ms(void)
 				RADIO_SetupRegisters(true);
 			}
 */
+#ifdef ENABLE_DTMF
 			DTMF_clear_input_box();
+#endif
 
 			gWasFKeyPressed  = false;
 			gInputBoxIndex   = 0;
@@ -1676,12 +1691,14 @@ static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 		}
 
 		if (Key == KEY_EXIT && bKeyHeld) { // exit key held pressed
+#ifdef ENABLE_DTMF
 			// clear the live DTMF decoder
 			if (gDTMF_RX_live[0] != 0) {
 				memset(gDTMF_RX_live, 0, sizeof(gDTMF_RX_live));
 				gDTMF_RX_live_timeout = 0;
 				gUpdateDisplay        = true;
 			}
+#endif
 
 			// cancel user input
 			cancelUserInputModes();
@@ -1818,10 +1835,14 @@ if (gCurrentFunction == FUNCTION_TRANSMIT) {
 				Code = 0xFE;
 			}
 			else {
+#ifdef ENABLE_DTMF
 				Code = DTMF_GetCharacter(Key - KEY_0);
 				if (Code == 0xFF)
 					goto Skip;
 				// transmit DTMF keys
+#else
+				goto Skip;
+#endif
 			}
 
 			if (!bKeyPressed || bKeyHeld) {

@@ -127,6 +127,7 @@ You'll find the options at the top of "Makefile" ('0' = disable, '1' = enable) .
 | ENABLE_ALARM | TX alarms |
 | ENABLE_TX1750 | side key 1750Hz TX tone (older style repeater access)|
 | ENABLE_PWRON_PASSWORD | power-on password stuff |
+| ENABLE_DTMF | basic DTMF: PTT ID (UP/DOWN codes, Apollo), live DTMF decoder, DTMF keypad entry (`*` short press) and DTMF keys while transmitting |
 | ENABLE_DTMF_CALLING | DTMF calling fuctionality, sending calls, receiving calls, group calls, contacts list etc. |
 | ENABLE_FLASHLIGHT | enable top flashlight LED (on, blink, SOS) |
 |🧰 **CUSTOM MODS**||
