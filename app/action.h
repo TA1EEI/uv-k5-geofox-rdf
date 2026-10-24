@@ -31,8 +31,8 @@ void ACTION_VoxOrCwBreakIn(void);
 	void ACTION_FM(void);
 #endif
 void ACTION_SwitchDemodul(void);
-#ifdef ENABLE_VOICE
-	void ACTION_SayFrequency(void);
+#ifdef ENABLE_ENUNCIATE
+	void ACTION_SayLabel(void);
 #endif
 void ACTION_SwitchFilter(void);
 

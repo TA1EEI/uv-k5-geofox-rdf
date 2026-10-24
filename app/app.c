@@ -77,7 +77,7 @@
 #ifdef ENABLE_CW_ENUNCIATE
 #include "app/cwenunciate.h"
 #endif
-#ifdef ENABLE_CODE_PRACTICE
+#ifdef ENABLE_CW_MODULATOR
 #include "app/cpo.h"
 #endif
 
@@ -95,7 +95,7 @@ void (*ProcessKeysFunctions[])(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld) 
 	[DISPLAY_MENU] = &MENU_ProcessKeys,
 	[DISPLAY_SCANNER] = &SCANNER_ProcessKeys,
 
-#ifdef ENABLE_CODE_PRACTICE
+#ifdef ENABLE_CW_MODULATOR
 	[DISPLAY_CPO] = &CPO_ProcessKeys,
 #endif
 
@@ -1171,7 +1171,7 @@ void APP_TimeSlice10ms(void)
 	CW_PlaybackIndicatorDeadline();
 #endif
 
-#ifdef ENABLE_CODE_PRACTICE
+#ifdef ENABLE_CW_MODULATOR
 	if (gCW_CpoActive) {
 		CPO_Tick();
 	}
@@ -1484,7 +1484,7 @@ void APP_TimeSlice500ms(void)
 			&& !gDTMF_InputMode
 #endif
 			&& gScreenToDisplay != DISPLAY_MENU
-#ifdef ENABLE_CODE_PRACTICE
+#ifdef ENABLE_CW_MODULATOR
 			&& !gCW_CpoActive
 #endif
 			&& --gKeyLockCountdown == 0)
@@ -1624,7 +1624,7 @@ static void ALARM_Off(void)
 
 static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
-#ifdef ENABLE_CODE_PRACTICE
+#ifdef ENABLE_CW_MODULATOR
 	if (gCW_CpoActive) {
 		if (Key == KEY_EXIT) {
 			CPO_Exit();

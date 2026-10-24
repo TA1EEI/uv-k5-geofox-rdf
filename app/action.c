@@ -41,6 +41,7 @@
 #include "misc.h"
 #include "settings.h"
 #include "ui/inputbox.h"
+#include "ui/menu.h"
 #include "ui/ui.h"
 
 #ifdef ENABLE_CW_MODULATOR
@@ -137,10 +138,10 @@ void (*action_opt_table[])(void) = {
 	[ACTION_OPT_SPECTRUM] = &FUNCTION_NOP,
 #endif
 
-#ifdef ENABLE_VOICE
-	[ACTION_OPT_SAY_FREQ] = &ACTION_SayFrequency,
+#ifdef ENABLE_ENUNCIATE
+	[ACTION_OPT_SAY_LABEL] = &ACTION_SayLabel,
 #else
-	[ACTION_OPT_SAY_FREQ] = &FUNCTION_NOP,
+	[ACTION_OPT_SAY_LABEL] = &FUNCTION_NOP,
 #endif
 };
 
@@ -560,7 +561,7 @@ static void ACTION_AlarmOr1750(const bool b1750)
 
 #endif
 
-#ifdef ENABLE_VOICE
+#if defined(ENABLE_VOICE) && (defined(ENABLE_VOX) || defined(ENABLE_CW_MODULATOR))
 // queue "VOX" followed by "ON"/"OFF"; 0xFE tells APP to play the queue as-is
 static void PlayVoxOnOff(bool on)
 {
@@ -568,10 +569,28 @@ static void PlayVoxOnOff(bool on)
 	AUDIO_SetVoiceID(1, on ? VOICE_ID_ON : VOICE_ID_OFF);
 	gAnotherVoiceID = (VOICE_ID_t)0xFE;
 }
+#endif
 
-void ACTION_SayFrequency(void)
+#ifdef ENABLE_ENUNCIATE
+// main screen: the VFO frequency (voice, or CW in a build without voice)
+// menu: the highlighted menu item, or the displayed value when in a sub-menu (CW)
+void ACTION_SayLabel(void)
 {
-	AUDIO_SetFrequencyVoice(gTxVfo->pRX->Frequency);
+	if (gScreenToDisplay == DISPLAY_MAIN)
+	{
+	#ifdef ENABLE_VOICE
+		AUDIO_SetFrequencyVoice(gTxVfo->pRX->Frequency);
+	#else
+		AUDIO_SetFrequencyCW(gTxVfo->pRX->Frequency);
+	#endif
+	}
+#ifdef ENABLE_CW_ENUNCIATE
+	else if (gScreenToDisplay == DISPLAY_MENU)
+		AUDIO_SetCWEnunciate(gIsInSubMenu ? gMenuLabelText : MenuList[gMenuCursor].name);
+#endif
+	else
+		return;
+
 	gAnotherVoiceID = (VOICE_ID_t)0xFE;
 }
 #endif

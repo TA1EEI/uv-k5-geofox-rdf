@@ -30,7 +30,7 @@
 #ifdef ENABLE_SPECTRUM
 #include "app/spectrum.h"
 #endif
-#ifdef ENABLE_CODE_PRACTICE
+#ifdef ENABLE_CW_MODULATOR
 #include "app/cpo.h"
 #endif
 
@@ -220,7 +220,7 @@ static void processFKeyFunction(const KEY_Code_t Key, const bool beep)
 				toggle_chan_scanlist();
 #endif
 			}
-#if defined(ENABLE_CODE_PRACTICE) && !defined(ENABLE_NOAA) && !defined(ENABLE_SPECTRUM)
+#if defined(ENABLE_CW_MODULATOR) && !defined(ENABLE_NOAA) && !defined(ENABLE_SPECTRUM)
 				CPO_Enter();
 				gRequestDisplayScreen = DISPLAY_CPO;
 #endif

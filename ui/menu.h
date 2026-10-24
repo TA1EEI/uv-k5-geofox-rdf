@@ -192,6 +192,10 @@ extern const char*        gSubMenu_CW_KEY_PORT[3];
 extern bool              gIsInSubMenu;
 				         
 extern uint8_t           gMenuCursor;
+#ifdef ENABLE_CW_ENUNCIATE
+	// copy of the value text last drawn for the current menu item, for SAY LABEL
+	extern char          gMenuLabelText[ENUNCIATE_QUEUE_LEN + 9];
+#endif
 
 extern int32_t           gSubMenuSelection;
 				         

@@ -398,8 +398,8 @@ const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
 #ifdef ENABLE_SPECTRUM
 	{"SPECTRUM",         ACTION_OPT_SPECTRUM},
 #endif
-#ifdef ENABLE_VOICE
-	{"SAY\nFREQ",        ACTION_OPT_SAY_FREQ},
+#ifdef ENABLE_ENUNCIATE
+	{"SAY\nLABEL",       ACTION_OPT_SAY_LABEL},
 #endif
 };
 
@@ -456,6 +456,10 @@ uint8_t UI_MENU_GetMenuIdx(uint8_t id)
 }
 
 int32_t gSubMenuSelection;
+
+#ifdef ENABLE_CW_ENUNCIATE
+	char gMenuLabelText[ENUNCIATE_QUEUE_LEN + 9];  // raw text, the CW encoder drops some chars
+#endif
 
 // edit box
 char    edit_original[17]; // a copy of the text before editing so that we can easily test for changes/difference
@@ -1008,6 +1012,12 @@ void UI_DisplayMenu(void)
 #endif
 	}
 
+#ifdef ENABLE_CW_ENUNCIATE
+	// grab it before the multi-line split below chops it up; items that drew
+	// themselves leave the last thing they printed in String
+	strncpy(gMenuLabelText, String, sizeof(gMenuLabelText) - 1);
+#endif
+
 	if (!already_printed)
 	{	// we now do multi-line text in a single string
 
@@ -1073,6 +1083,10 @@ void UI_DisplayMenu(void)
 			UI_GenerateChannelStringEx(String, true, gSubMenuSelection);
 			pPrintStr = String;
 		}
+
+#ifdef ENABLE_CW_ENUNCIATE
+		strncpy(gMenuLabelText, pPrintStr, sizeof(gMenuLabelText) - 1);
+#endif
 
 		// channel number
 		UI_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 0, 8);

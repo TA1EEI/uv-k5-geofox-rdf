@@ -29,6 +29,7 @@
 
 #include "app/cwenunciate.h"
 #include "app/cwmacro.h"
+#include "app/cpo.h"
 #ifdef ENABLE_FMRADIO
 #include "app/fm.h"
 #include "driver/bk1080.h"
@@ -139,17 +140,21 @@ void CW_EnunciateStop(void)
     BK4819_WriteRegister(BK4819_REG_70, 0);
     BK4819_WriteRegister(BK4819_REG_71, s_saved_reg71);
 
-    // AF can't go ALAM -> MUTE (BK4819_SetAF skips it), so always rebuild
-    // the RX demod; the speaker amp below decides whether it's heard
-    RADIO_SetModulation(gRxVfo->Modulation);
-
 #ifdef ENABLE_FMRADIO
     if (gFmRadioMode)
         BK1080_Mute(false);
 #endif
 
-    if (!gEnableSpeaker)
-        AUDIO_AudioPathOff();
+    // CPO owns the audio path: it stays in ALAM with the speaker on for its sidetone
+    if (!gCW_CpoActive)
+    {
+        // AF can't go ALAM -> MUTE (BK4819_SetAF skips it), so always rebuild
+        // the RX demod; the speaker amp below decides whether it's heard
+        RADIO_SetModulation(gRxVfo->Modulation);
+
+        if (!gEnableSpeaker)
+            AUDIO_AudioPathOff();
+    }
 
     if (gCurrentFunction == FUNCTION_POWER_SAVE && gRxIdleMode)
         BK4819_Sleep();

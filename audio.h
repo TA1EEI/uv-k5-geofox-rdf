@@ -153,7 +153,10 @@ static inline bool AUDIO_IsAudioPathOn(void) {
 		ENUNCIATE_CW,			// queue holds ASCII chars, ' ' = word gap
 	} ENUNCIATE_Mode_t;
 
-	extern VOICE_ID_t        gVoiceID[10];
+	// longest menu string today is "Side Btn\nIambic\nReversed" (24 chars as CW)
+	#define ENUNCIATE_QUEUE_LEN 24
+
+	extern VOICE_ID_t        gVoiceID[ENUNCIATE_QUEUE_LEN];
 	extern uint8_t           gVoiceReadIndex;
 	extern uint8_t           gVoiceWriteIndex;
 	extern ENUNCIATE_Mode_t  gEnunciateMode;

@@ -40,9 +40,7 @@
 #include "settings.h"
 #include "driver/system.h"
 #include "driver/timer.h"
-#ifdef ENABLE_CODE_PRACTICE
 #include "app/cpo.h"
-#endif
 #ifdef ENABLE_FLASHLIGHT
 #include "app/flashlight.h"
 #endif
@@ -87,9 +85,7 @@ void CW_AppUpdate(void)
 		return;
 
 	if (!(gTxVfo->Modulation == MODULATION_CW
-#ifdef ENABLE_CODE_PRACTICE
 		|| gCW_CpoActive
-#endif
 	))
 	{
 		// Not in CW mode – paranoid check to end CW TX
@@ -116,9 +112,7 @@ void CW_AppUpdate(void)
 	// ---- local-only sidetone path (no RF) ----
 	// Used when recording a macro, reading ADC, breakin disabled, or code practice
 	if ( !gEeprom.CW_BREAKIN_ENABLE || gCW_Recording || gCW_AdcReadActive
-#ifdef ENABLE_CODE_PRACTICE
 		|| gCW_CpoActive
-#endif
 		) {
 		switch (action)
 		{
@@ -153,9 +147,7 @@ void CW_AppUpdate(void)
 					GPIO_ClearBit(&GPIOC->DATA, GPIOC_PIN_FLASHLIGHT);
 				}
 				#endif
-				#ifdef ENABLE_CODE_PRACTICE
 				if (!gCW_CpoActive)  // just stay in ALAM for CPO
-				#endif
 					RADIO_SetModulation(gRxVfo->Modulation);
 				gCW_TxDisplayHoldoff_10ms = 200;
 			break;

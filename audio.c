@@ -16,6 +16,7 @@
 
 #ifdef ENABLE_CW_ENUNCIATE
 	#include "app/cwenunciate.h"
+	#include "app/cwmacro.h"
 #endif
 #ifdef ENABLE_FMRADIO
 	#include "app/fm.h"
@@ -183,7 +184,7 @@ void AUDIO_PlayBeep(BEEP_Type_t Beep)
 
 #ifdef ENABLE_ENUNCIATE
 
-VOICE_ID_t        gVoiceID[10];
+VOICE_ID_t        gVoiceID[ENUNCIATE_QUEUE_LEN];
 uint8_t           gVoiceReadIndex;
 uint8_t           gVoiceWriteIndex;
 ENUNCIATE_Mode_t  gEnunciateMode = ENUNCIATE_VOICE;
@@ -246,11 +247,32 @@ static void QueueFrequency(uint32_t Frequency, ENUNCIATE_Mode_t Mode)
 
 void AUDIO_SetCWEnunciate(const char *pText)
 {
+	bool Gap = false;
+
 	AUDIO_ClearEnunciateQueue(ENUNCIATE_CW);
 
-	// the morse table is upper case only, so menu names like "CWwpm" need folding
+	// Fold to upper case (the morse table has no lower case), and turn anything
+	// morse can't send (spaces, newlines, '.', '+', units...) into a single word
+	// gap, so display strings like "Side Btn\nIambic" can be passed straight in.
 	for (; *pText; pText++)
-		QueueEntry((*pText >= 'a' && *pText <= 'z') ? *pText - ('a' - 'A') : *pText);
+	{
+		uint8_t Pattern, Length;
+		char    Ch = *pText;
+
+		if (Ch >= 'a' && Ch <= 'z')
+			Ch -= 'a' - 'A';
+
+		if (!CW_GetMorseForChar(Ch, &Pattern, &Length))
+		{
+			Gap = gVoiceWriteIndex > 0;
+			continue;
+		}
+
+		if (Gap)
+			QueueEntry(' ');
+		Gap = false;
+		QueueEntry(Ch);
+	}
 }
 
 void AUDIO_SetFrequencyCW(uint32_t Frequency)
