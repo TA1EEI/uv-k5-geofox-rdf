@@ -5,6 +5,7 @@
 
 # ---- STOCK QUANSHENG FEATURES ----
 ENABLE_UART                   ?= 1
+ENABLE_UART_AES_LOCK          ?= 0
 ENABLE_AIRCOPY                ?= 0
 ENABLE_FMRADIO                ?= 0
 ENABLE_NOAA                   ?= 0
@@ -43,6 +44,7 @@ ENABLE_BLMIN_TMP_OFF          ?= 0
 ENABLE_SCAN_RANGES            ?= 0
 ENABLE_CW_MODULATOR           ?= 1
 ENABLE_CODE_PRACTICE          ?= 1
+ENABLE_CW_ENUNCIATE           ?= 1
 ENABLE_MILLIS                 ?= 0
 ENABLE_EXTRA_FILTER           ?= 1
 
@@ -83,6 +85,18 @@ $(error ENABLE_CODE_PRACTICE requires ENABLE_CW_MODULATOR)
 endif
 endif
 
+ifeq ($(ENABLE_CW_ENUNCIATE),1)
+ifeq ($(ENABLE_CW_MODULATOR),0)
+$(error ENABLE_CW_ENUNCIATE requires ENABLE_CW_MODULATOR)
+endif
+endif
+
+ifeq ($(ENABLE_UART_AES_LOCK),1)
+ifeq ($(ENABLE_UART),0)
+$(error ENABLE_UART_AES_LOCK requires ENABLE_UART)
+endif
+endif
+
 ifeq ($(ENABLE_DTMF_CALLING),1)
 ifeq ($(ENABLE_DTMF),0)
 $(error ENABLE_DTMF_CALLING requires ENABLE_DTMF)
@@ -110,7 +124,7 @@ OBJS += external/printf/printf.o
 
 # Drivers
 OBJS += driver/adc.o
-ifeq ($(ENABLE_UART),1)
+ifeq ($(ENABLE_UART_AES_LOCK),1)
 	OBJS += driver/aes.o
 endif
 OBJS += driver/backlight.o
@@ -145,6 +159,9 @@ ifeq ($(ENABLE_CW_MODULATOR),1)
 endif
 ifeq ($(ENABLE_CODE_PRACTICE),1)
 	OBJS += app/cpo.o
+endif
+ifeq ($(ENABLE_CW_ENUNCIATE),1)
+	OBJS += app/cwenunciate.o
 endif
 ifeq ($(ENABLE_MILLIS),1)
 	OBJS += driver/timer.o
@@ -415,6 +432,13 @@ endif
 ifeq ($(ENABLE_CODE_PRACTICE),1)
 	CFLAGS  += -DENABLE_CODE_PRACTICE
 endif
+ifeq ($(ENABLE_CW_ENUNCIATE),1)
+	CFLAGS  += -DENABLE_CW_ENUNCIATE
+endif
+# shared voice / CW enunciation queue
+ifneq ($(filter 1,$(ENABLE_VOICE) $(ENABLE_CW_ENUNCIATE)),)
+	CFLAGS  += -DENABLE_ENUNCIATE
+endif
 ifeq ($(ENABLE_MILLIS),1)
 	CFLAGS  += -DENABLE_MILLIS
 endif
@@ -435,6 +459,9 @@ ifeq ($(ENABLE_FLASHLIGHT),1)
 endif
 ifeq ($(ENABLE_UART_RW_BK_REGS),1)
 	CFLAGS  += -DENABLE_UART_RW_BK_REGS
+endif
+ifeq ($(ENABLE_UART_AES_LOCK),1)
+	CFLAGS  += -DENABLE_UART_AES_LOCK
 endif
 ifeq ($(ENABLE_CUSTOM_MENU_LAYOUT),1)
 	CFLAGS  += -DENABLE_CUSTOM_MENU_LAYOUT

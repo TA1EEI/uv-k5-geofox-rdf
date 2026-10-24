@@ -22,6 +22,9 @@
 
 #include "app/cwapp.h"
 #include "app/cwkeyer.h"
+#ifdef ENABLE_CW_ENUNCIATE
+#include "app/cwenunciate.h"
+#endif
 #include "app/cwmacro.h"
 #include "app/app.h"
 #include "app/menu.h"
@@ -103,6 +106,12 @@ void CW_AppUpdate(void)
 		action = CW_PlaybackHandleState();
 	else
 		action = CW_HandleState();
+
+#ifdef ENABLE_CW_ENUNCIATE
+	// keying or macro playback takes over the sidetone from an enunciation
+	if (action == CW_ACTION_CARRIER_ON)
+		CW_EnunciateStop();
+#endif
 
 	// ---- local-only sidetone path (no RF) ----
 	// Used when recording a macro, reading ADC, breakin disabled, or code practice

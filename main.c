@@ -34,6 +34,9 @@
 #ifdef ENABLE_CW_MODULATOR
 	#include "app/cwapp.h"
 	#include "app/cwkeyer.h"
+#ifdef ENABLE_CW_ENUNCIATE
+	#include "app/cwenunciate.h"
+#endif
 #endif
 #include "bsp/dp32g030/gpio.h"
 #include "bsp/dp32g030/syscon.h"
@@ -77,7 +80,9 @@ void Main(void)
 		| SYSCON_DEV_CLK_GATE_SPI0_BITS_ENABLE
 		| SYSCON_DEV_CLK_GATE_SARADC_BITS_ENABLE
 		| SYSCON_DEV_CLK_GATE_CRC_BITS_ENABLE
+#ifdef ENABLE_UART_AES_LOCK
 		| SYSCON_DEV_CLK_GATE_AES_BITS_ENABLE
+#endif
 		| SYSCON_DEV_CLK_GATE_PWM_PLUS0_BITS_ENABLE;
 
 
@@ -290,6 +295,9 @@ void Main(void)
 		if (timer_millis_low16_since(s_last_millis) > 0) {
 			s_last_millis = current_millis;
 			CW_AppUpdate();
+#ifdef ENABLE_CW_ENUNCIATE
+			CW_EnunciateUpdate();
+#endif
 		}
 #endif
 

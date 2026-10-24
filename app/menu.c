@@ -234,7 +234,7 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 		#ifdef ENABLE_AUDIO_BAR
 			case MENU_MIC_BAR:
 		#endif
-		#ifdef ENABLE_VOICE
+		#ifdef ENABLE_ENUNCIATE
 			case MENU_VOICE:
 		#endif
 		case MENU_BCL:
@@ -625,7 +625,7 @@ void MENU_AcceptSetting(void)
 			gEeprom.TX_TIMEOUT_TIMER = gSubMenuSelection;
 			break;
 
-		#ifdef ENABLE_VOICE
+		#ifdef ENABLE_ENUNCIATE
 			case MENU_VOICE:
 				gEeprom.VOICE_PROMPT = gSubMenuSelection;
 				gUpdateStatus        = true;
@@ -1153,7 +1153,7 @@ void MENU_ShowCurrentSetting(void)
 			gSubMenuSelection = gEeprom.TX_TIMEOUT_TIMER;
 			break;
 
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 		case MENU_VOICE:
 			gSubMenuSelection = gEeprom.VOICE_PROMPT;
 			break;
@@ -1666,10 +1666,23 @@ static void MENU_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
 
 	if (!gIsInSubMenu)
 	{
-		#ifdef ENABLE_VOICE
-			if (UI_MENU_GetCurrentMenuId() != MENU_SCR)
-				gAnotherVoiceID = MenuList[gMenuCursor].voice_id;
+		if (UI_MENU_GetCurrentMenuId() != MENU_SCR)
+		{
+		#ifdef ENABLE_CW_ENUNCIATE
+			// no voice clip for this item: send its name in CW instead
+			if (MenuList[gMenuCursor].voice_id == VOICE_ID_INVALID)
+			{
+				AUDIO_SetCWEnunciate(MenuList[gMenuCursor].name);
+				gAnotherVoiceID = (VOICE_ID_t)0xFE;
+			}
+			else
 		#endif
+			{
+			#ifdef ENABLE_VOICE
+				gAnotherVoiceID = MenuList[gMenuCursor].voice_id;
+			#endif
+			}
+		}
 #ifdef ENABLE_DTMF
         if (UI_MENU_GetCurrentMenuId() == MENU_UPCODE 
 			|| UI_MENU_GetCurrentMenuId() == MENU_DWCODE 

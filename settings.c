@@ -129,7 +129,7 @@ void SETTINGS_InitEEPROM(void)
 
 	// 0EA0..0EA7
 	EEPROM_ReadBuffer(0x0EA0, Data, 8);
-	#ifdef ENABLE_VOICE
+	#ifdef ENABLE_ENUNCIATE
 	gEeprom.VOICE_PROMPT = Data[0] != 0;
 	#endif
 	#ifdef ENABLE_RSSI_BAR
@@ -289,6 +289,7 @@ void SETTINGS_InitEEPROM(void)
 		}
 	}
 
+#ifdef ENABLE_UART_AES_LOCK
 	// 0F30..0F3F
 	EEPROM_ReadBuffer(0x0F30, gCustomAesKey, sizeof(gCustomAesKey));
 	bHasCustomAesKey = false;
@@ -300,6 +301,7 @@ void SETTINGS_InitEEPROM(void)
 			return;
 		}
 	}
+#endif
 }
 
 void SETTINGS_LoadCalibration(void)
@@ -542,7 +544,7 @@ void SETTINGS_SaveSettings(void)
 	EEPROM_WriteBuffer(0x0E98, Password);
 
 	memset(State, 0xFF, sizeof(State));
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 	State[0] = gEeprom.VOICE_PROMPT ? 2 : 0;	// 2 = ENG on older firmware
 #endif
 #ifdef ENABLE_RSSI_BAR

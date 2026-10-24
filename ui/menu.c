@@ -91,7 +91,7 @@ const t_menu_item MenuList[] =
 	{"BLMax",  VOICE_ID_INVALID,                       MENU_ABR_MAX       },
 	{"BltTRX", VOICE_ID_INVALID,                       MENU_ABR_ON_TX_RX  },
 	{"Beep",   VOICE_ID_BEEP_PROMPT,                   MENU_BEEP          },
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 	{"Voice",  VOICE_ID_VOICE_PROMPT,                  MENU_VOICE         },
 #endif
 	{"Roger",  VOICE_ID_INVALID,                       MENU_ROGER         },
@@ -144,7 +144,7 @@ const t_menu_item MenuList[] =
 	{"CWmsg3", VOICE_ID_INVALID,                       MENU_CW_MSG3       },
 	{"CWmsg4", VOICE_ID_INVALID,                       MENU_CW_MSG4       },
 	{"CWmrpt", VOICE_ID_INVALID,                       MENU_CW_MSG_REPEAT },
-	{"CWbkin", VOICE_ID_INVALID,                       MENU_CW_BKIN       },
+	{"CWbkin", VOICE_ID_VOX,       		               MENU_CW_BKIN       },
 #endif
 
 	// hidden menu items from here on
@@ -396,7 +396,10 @@ const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
 	{"REPEAT\nCW MSG4", ACTION_OPT_REPEAT_CWMSG4},
 #endif
 #ifdef ENABLE_SPECTRUM
-	{"SPECTRUM",         ACTION_OPT_SPECTRUM}
+	{"SPECTRUM",         ACTION_OPT_SPECTRUM},
+#endif
+#ifdef ENABLE_VOICE
+	{"SAY\nFREQ",        ACTION_OPT_SAY_FREQ},
 #endif
 };
 
@@ -681,7 +684,7 @@ void UI_DisplayMenu(void)
 		#ifdef ENABLE_AM_FIX
 			case MENU_AM_FIX:
 		#endif
-		#ifdef ENABLE_VOICE
+		#ifdef ENABLE_ENUNCIATE
 			case MENU_VOICE:
 		#endif
 		case MENU_BCL:

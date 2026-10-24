@@ -74,6 +74,9 @@
 #ifdef ENABLE_CW_MODULATOR
 #include "app/cwkeyer.h"
 #endif
+#ifdef ENABLE_CW_ENUNCIATE
+#include "app/cwenunciate.h"
+#endif
 #ifdef ENABLE_CODE_PRACTICE
 #include "app/cpo.h"
 #endif
@@ -495,7 +498,7 @@ void APP_StartListening(FUNCTION_Type_t function)
 		(gEeprom.VOLUME_GAIN << 4) |     // AF Rx Gain-2
 		(gEeprom.DAC_GAIN    << 0));     // AF DAC Gain (after Gain-1 and Gain-2)
 
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 	if (gVoiceWriteIndex == 0)       // AM/FM RX mode will be set when the voice has finished
 #endif
 		RADIO_SetModulation(gRxVfo->Modulation);  // no need, set it now
@@ -865,7 +868,7 @@ void APP_Update(void)
 		return;
 #endif
 
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 	if (!SCANNER_IsScanning() && gScanStateDir != SCAN_OFF && gScheduleScanListen && !gPttIsPressed && gVoiceWriteIndex == 0)
 #else
 	if (!SCANNER_IsScanning() && gScanStateDir != SCAN_OFF && gScheduleScanListen && !gPttIsPressed)
@@ -875,7 +878,7 @@ void APP_Update(void)
 	}
 
 #ifdef ENABLE_NOAA
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 		if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF && gIsNoaaMode && gScheduleNOAA && gVoiceWriteIndex == 0)
 #else
 		if (gEeprom.DUAL_WATCH == DUAL_WATCH_OFF && gIsNoaaMode && gScheduleNOAA)
@@ -896,7 +899,7 @@ void APP_Update(void)
 		&& gScanStateDir == SCAN_OFF
 		&& !gPttIsPressed
 		&& gCurrentFunction != FUNCTION_POWER_SAVE
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 		&& gVoiceWriteIndex == 0
 #endif
 #ifdef ENABLE_FMRADIO
@@ -957,7 +960,7 @@ void APP_Update(void)
 	}
 
 	if (gPowerSaveCountdownExpired && gCurrentFunction == FUNCTION_POWER_SAVE
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 		&& gVoiceWriteIndex == 0
 #endif
 	) {
@@ -2021,11 +2024,20 @@ Skip:
 		gFlagPrepareTX = false;
 	}
 
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 	if (gAnotherVoiceID != VOICE_ID_INVALID) {
+#ifdef ENABLE_VOICE
 		if (gAnotherVoiceID < 76)
 			AUDIO_SetVoiceID(0, gAnotherVoiceID);
-		AUDIO_PlaySingleVoice(false);
+#endif
+#ifdef ENABLE_CW_ENUNCIATE
+		if (gEnunciateMode == ENUNCIATE_CW)
+			CW_EnunciateStart();
+#endif
+#ifdef ENABLE_VOICE
+		if (gEnunciateMode == ENUNCIATE_VOICE)
+			AUDIO_PlaySingleVoice(false);
+#endif
 		gAnotherVoiceID = VOICE_ID_INVALID;
 	}
 #endif

@@ -98,7 +98,7 @@ void UI_DisplayStatus()
 	}
 	x += 10;  // font character width
 
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 	// VOICE indicator
 	if (gEeprom.VOICE_PROMPT){
 		memcpy(line + x, BITMAP_VoicePrompt, sizeof(BITMAP_VoicePrompt));

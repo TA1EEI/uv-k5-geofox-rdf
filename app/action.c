@@ -136,6 +136,12 @@ void (*action_opt_table[])(void) = {
 #else
 	[ACTION_OPT_SPECTRUM] = &FUNCTION_NOP,
 #endif
+
+#ifdef ENABLE_VOICE
+	[ACTION_OPT_SAY_FREQ] = &ACTION_SayFrequency,
+#else
+	[ACTION_OPT_SAY_FREQ] = &FUNCTION_NOP,
+#endif
 };
 
 static_assert(ARRAY_SIZE(action_opt_table) == ACTION_OPT_LEN);
@@ -312,6 +318,12 @@ void ACTION_SwitchDemodul(void)
 
 	// Reconfigure radio path now (not only on later key release/save handling).
 	gFlagReconfigureVfos = true;
+
+#ifdef ENABLE_CW_ENUNCIATE
+	// APP starts it after the reconfigure, so it plays in the new mode's audio path
+	AUDIO_SetCWEnunciate(gModulationStr[gTxVfo->Modulation]);
+	gAnotherVoiceID = (VOICE_ID_t)0xFE;
+#endif
 }
 
 void ACTION_SwitchFilter(void)
@@ -554,6 +566,12 @@ static void PlayVoxOnOff(bool on)
 {
 	AUDIO_SetVoiceID(0, VOICE_ID_VOX);
 	AUDIO_SetVoiceID(1, on ? VOICE_ID_ON : VOICE_ID_OFF);
+	gAnotherVoiceID = (VOICE_ID_t)0xFE;
+}
+
+void ACTION_SayFrequency(void)
+{
+	AUDIO_SetFrequencyVoice(gTxVfo->pRX->Frequency);
 	gAnotherVoiceID = (VOICE_ID_t)0xFE;
 }
 #endif

@@ -151,6 +151,7 @@ enum ACTION_OPT_t {
 	ACTION_OPT_REPEAT_CWMSG4,
 #endif
 	ACTION_OPT_SPECTRUM,
+	ACTION_OPT_SAY_FREQ,
 	ACTION_OPT_LEN
 };
 
@@ -208,7 +209,7 @@ typedef struct {
 	bool                  KEY_LOCK;
 	bool                  VOX_SWITCH;
 	uint8_t               VOX_LEVEL;
-#ifdef ENABLE_VOICE
+#ifdef ENABLE_ENUNCIATE
 	bool                  VOICE_PROMPT;
 #endif
 	bool                  BEEP_CONTROL;

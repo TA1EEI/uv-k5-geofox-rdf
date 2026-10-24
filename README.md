@@ -119,6 +119,7 @@ You'll find the options at the top of "Makefile" ('0' = disable, '1' = enable) .
 | --- | ---- |
 |🧰 **STOCK QUANSHENG FEATURES**||
 | ENABLE_UART | without this you can't configure radio via PC ! |
+| ENABLE_UART_AES_LOCK | stock AES challenge/response lock on PC programming (custom key at 0x0F30). Off = radio always reports no key and answers unlock requests as unlocked |
 | ENABLE_AIRCOPY | easier to just enter frequency with butts |
 | ENABLE_FMRADIO | WBFM VHF broadcast band receiver |
 | ENABLE_NOAA | everything NOAA (only of any use in the USA) |
