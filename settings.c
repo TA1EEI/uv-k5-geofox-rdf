@@ -130,7 +130,9 @@ void SETTINGS_InitEEPROM(void)
 	// 0EA0..0EA7
 	EEPROM_ReadBuffer(0x0EA0, Data, 8);
 	#ifdef ENABLE_ENUNCIATE
-	gEeprom.VOICE_PROMPT = Data[0] != 0;
+	// only the old CHINESE(1)/ENGLISH(2) values mean on; erased (0xFF), or the 0xFF
+	// written by builds without voice, defaults to off
+	gEeprom.VOICE_PROMPT = (Data[0] == 1 || Data[0] == 2);
 	#endif
 	#ifdef ENABLE_RSSI_BAR
 		if((Data[1] < 200 && Data[1] > 90) && (Data[2] < Data[1]-9 && Data[1] < 160  && Data[2] > 50)) {

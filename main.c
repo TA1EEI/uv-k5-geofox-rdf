@@ -150,6 +150,16 @@ void Main(void)
 	{
 		gF_LOCK = true;            // flag to say include the hidden menu items
 	}
+#ifdef ENABLE_ENUNCIATE
+	else if (BootMode == BOOT_MODE_BLIND)
+	{	// guaranteed usable radio for a blind operator, whatever was configured before:
+		// prompts on (also gates CW enunciation), side 2 short press reads the display
+		gEeprom.VOICE_PROMPT             = true;
+		gEeprom.KEY_2_SHORT_PRESS_ACTION = ACTION_OPT_SAY_LABEL;
+		// save now: gRequestSaveSettings is only serviced on a key press
+		SETTINGS_SaveSettings();
+	}
+#endif
 
 	// count the number of menu items
 	gMenuListCount = 0;
