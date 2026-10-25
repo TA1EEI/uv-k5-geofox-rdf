@@ -32,6 +32,7 @@
 #endif
 #ifdef ENABLE_CW_MODULATOR
 #include "app/cpo.h"
+#include "app/cwpopup.h"
 #endif
 
 #include "audio.h"
@@ -749,6 +750,11 @@ void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 			return;
 		}
 	}
+#endif
+
+#ifdef ENABLE_CW_MODULATOR
+	if (CW_Popup_ProcessKey(Key, bKeyPressed, bKeyHeld))
+		return;
 #endif
 
 	// TODO: ???

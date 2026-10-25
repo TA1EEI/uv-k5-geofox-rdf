@@ -46,6 +46,7 @@
 
 #ifdef ENABLE_CW_MODULATOR
 #include "app/cwkeyer.h"
+#include "app/cwpopup.h"
 #endif
 
 #if defined(ENABLE_FMRADIO)
@@ -73,6 +74,7 @@ static void ACTION_RepeatCWMsg1(void);
 static void ACTION_RepeatCWMsg2(void);
 static void ACTION_RepeatCWMsg3(void);
 static void ACTION_RepeatCWMsg4(void);
+static void ACTION_CWProperRoger(void);
 #endif
 
 void (*action_opt_table[])(void) = {
@@ -130,6 +132,8 @@ void (*action_opt_table[])(void) = {
 	[ACTION_OPT_REPEAT_CWMSG2] = &ACTION_RepeatCWMsg2,
 	[ACTION_OPT_REPEAT_CWMSG3] = &ACTION_RepeatCWMsg3,
 	[ACTION_OPT_REPEAT_CWMSG4] = &ACTION_RepeatCWMsg4,
+	[ACTION_OPT_CW_PROPER_ROGER] = &ACTION_CWProperRoger,
+	[ACTION_OPT_CW_SPEED] = &CW_Popup_Speed,
 #endif
 
 #ifdef ENABLE_SPECTRUM
@@ -415,6 +419,9 @@ void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 
 	// held or released after short press beyond this point
 
+#ifdef ENABLE_CW_MODULATOR
+	CW_Popup_OnAction(funcShort);
+#endif
 	action_opt_table[funcShort]();
 }
 
@@ -528,6 +535,17 @@ static void ACTION_RepeatCWMsg3(void)
 static void ACTION_RepeatCWMsg4(void)
 {
 	CW_StartMacroPlayback(3, true);
+}
+
+static void ACTION_CWProperRoger(void)
+{
+	// playback only drives the keyer in CW mode, same rule as playing from the menu
+	if (gTxVfo->Modulation != MODULATION_CW) {
+		gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+		return;
+	}
+
+	CW_StartProperRoger();
 }
 #endif
 

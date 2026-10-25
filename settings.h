@@ -81,6 +81,11 @@ enum CW_KeyerMode_t {
 };
 typedef enum CW_KeyerMode_t CW_KeyerMode_t;
 
+// Proper roger dah length in dits (CWrgr menu); 3 is a plain R
+#define CW_ROGER_DAH_DITS_MIN     3
+#define CW_ROGER_DAH_DITS_MAX     20
+#define CW_ROGER_DAH_DITS_DEFAULT 9
+
 #endif
 
 enum TxLockModes_t {
@@ -152,6 +157,12 @@ enum ACTION_OPT_t {
 #endif
 	ACTION_OPT_SPECTRUM,
 	ACTION_OPT_SAY_LABEL,
+// A key bind is stored as this enum's number, so new actions go on the end.
+// The CHIRP driver lists the actions in this same order.
+#ifdef ENABLE_CW_MODULATOR
+	ACTION_OPT_CW_PROPER_ROGER,
+	ACTION_OPT_CW_SPEED,
+#endif
 	ACTION_OPT_LEN
 };
 
@@ -312,6 +323,7 @@ typedef struct {
 	uint16_t			  CW_KEY_INPUT_MENU;	// index of the chosen input method in the menu
 	bool     			  CW_BREAKIN_ENABLE;    // TX on key
 	uint8_t               CW_MESSAGE_REPEAT_DELAY;  // Repeat delay in seconds
+	uint8_t               CW_ROGER_DAH_DITS;    // proper roger dah length in dits
 	uint16_t              CW_ADC_CABLE_10K;         // ADC threshold for 10k resistor (CEC cable detection)
 	uint16_t              CW_ADC_CABLE_20K;         // ADC threshold for 20k resistor (CEC cable detection)
 #endif

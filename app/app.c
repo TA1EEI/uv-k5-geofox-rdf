@@ -73,6 +73,7 @@
 #include "ui/ui.h"
 #ifdef ENABLE_CW_MODULATOR
 #include "app/cwkeyer.h"
+#include "app/cwpopup.h"
 #endif
 #ifdef ENABLE_CW_ENUNCIATE
 #include "app/cwenunciate.h"
@@ -1169,6 +1170,7 @@ void APP_TimeSlice10ms(void)
 	}
 	// Update playback indicator
 	CW_PlaybackIndicatorDeadline();
+	CW_Popup_Tick10ms();
 #endif
 
 #ifdef ENABLE_CW_MODULATOR

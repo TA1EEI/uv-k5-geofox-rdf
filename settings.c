@@ -251,6 +251,11 @@ void SETTINGS_InitEEPROM(void)
 	gEeprom.CW_ADC_CABLE_10K = (val10k & 0x8000) ? 379 : (val10k & 0xFFF);
 	uint16_t val20k = (Data[6] | (Data[7] << 8));
 	gEeprom.CW_ADC_CABLE_20K = (val20k & 0x8000) ? 190 : (val20k & 0xFFF);
+
+	// 0F28..0F2F: second CW block. Unused before, so erased 0xFF reads as the defaults.
+	EEPROM_ReadBuffer(0x0F28, Data, 8);
+	// Data[0]: proper roger dah length in dits, 0xFF or out of range = default
+	gEeprom.CW_ROGER_DAH_DITS = (Data[0] >= CW_ROGER_DAH_DITS_MIN && Data[0] <= CW_ROGER_DAH_DITS_MAX) ? Data[0] : CW_ROGER_DAH_DITS_DEFAULT;
 #endif
 
 	// 0F40..0F47
@@ -615,6 +620,11 @@ void SETTINGS_SaveSettings(void)
 	State[6] = gEeprom.CW_ADC_CABLE_20K & 0xFF;
 	State[7] = (gEeprom.CW_ADC_CABLE_20K >> 8) & 0x7F;
 	EEPROM_WriteBuffer(0x0F20, State);
+
+	// 0F28..0F2F: second CW block, Data[1..7] free (0xFF)
+	memset(State, 0xff, sizeof(State));
+	State[0] = gEeprom.CW_ROGER_DAH_DITS;
+	EEPROM_WriteBuffer(0x0F28, State);
 #endif
 
 	memset(State, 0xFF, sizeof(State));

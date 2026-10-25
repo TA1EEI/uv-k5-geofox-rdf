@@ -147,6 +147,7 @@ ifeq ($(ENABLE_CW_MODULATOR),1)
     OBJS += app/cwkeyer.o
     OBJS += app/cwhardware.o
     OBJS += app/cwmacro.o
+    OBJS += app/cwpopup.o
 	# CW uses timer, but not millis (the ISR)
 	OBJS += driver/timer.o
 	OBJS += app/cpo.o

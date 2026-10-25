@@ -144,6 +144,7 @@ const t_menu_item MenuList[] =
 	{"CWmsg3", VOICE_ID_INVALID,                       MENU_CW_MSG3       },
 	{"CWmsg4", VOICE_ID_INVALID,                       MENU_CW_MSG4       },
 	{"CWmrpt", VOICE_ID_INVALID,                       MENU_CW_MSG_REPEAT },
+	{"CWrgr",  VOICE_ID_INVALID,                       MENU_CW_ROGER_DITS },
 	{"CWbkin", VOICE_ID_VOX,       		               MENU_CW_BKIN       },
 #endif
 
@@ -394,6 +395,8 @@ const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
 	{"REPEAT\nCW MSG2", ACTION_OPT_REPEAT_CWMSG2},
 	{"REPEAT\nCW MSG3", ACTION_OPT_REPEAT_CWMSG3},
 	{"REPEAT\nCW MSG4", ACTION_OPT_REPEAT_CWMSG4},
+	{"PROPER\nROGER", ACTION_OPT_CW_PROPER_ROGER},
+	{"CW SPEED", ACTION_OPT_CW_SPEED},
 #endif
 #ifdef ENABLE_SPECTRUM
 	{"SPECTRUM",         ACTION_OPT_SPECTRUM},
@@ -948,6 +951,10 @@ void UI_DisplayMenu(void)
 
 		case MENU_CW_MSG_REPEAT:
 			sprintf(String, "%d s", gSubMenuSelection);
+			break;
+
+		case MENU_CW_ROGER_DITS:
+			sprintf(String, "Dah\n%d dits", gSubMenuSelection);
 			break;
 
 		case MENU_CW_MSG1:
