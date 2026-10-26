@@ -159,6 +159,9 @@ void Main(void)
 		gEeprom.KEY_2_SHORT_PRESS_ACTION = ACTION_OPT_SAY_LABEL;
 #ifdef ENABLE_CW_MODULATOR
 		gEeprom.KEY_2_LONG_PRESS_ACTION  = ACTION_OPT_CW_SPEED;
+		// CW enunciation plays on the sidetone, so a sidetone left off would silence it
+		if (gEeprom.CW_SIDETONE_LEVEL == 0)
+			gEeprom.CW_SIDETONE_LEVEL = 2 * 21;  // menu level 2, stored scaled by 21 (see settings.c)
 #endif
 		// save now: gRequestSaveSettings is only serviced on a key press
 		SETTINGS_SaveSettings();
