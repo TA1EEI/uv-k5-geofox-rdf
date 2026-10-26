@@ -357,9 +357,11 @@ CW_Action_t CW_PlaybackHandleState(void)
                 s_pb_state = PB_STATE_ACTIVE_ELEMENT;
                 return CW_ACTION_CARRIER_ON;
             } else {
-                // Char complete - go to char gap
+                // Char complete - go to char gap. Keep s_elem_start_count at the
+                // element-end origin (set at element end above) so char/word gaps
+                // are one timeline measured from the last keyed element, like the
+                // recorder in CW_HandleState() - do not reset it here.
                 s_pb_state = PB_STATE_INTER_CHAR_GAP;
-                s_elem_start_count = cur_count;
                 return CW_ACTION_NONE;
             }
         }
@@ -388,10 +390,11 @@ CW_Action_t CW_PlaybackHandleState(void)
         }
         char ch = s_playback_buf[s_playback_pos++];
         if (ch == ' ') {
-            // set pending space for next visible character and play word gap
+            // set pending space for next visible character and play word gap.
+            // Origin stays at the last element end (single timeline), so the
+            // word boundary lands at 7 units total, not 3 (char gap) + 7.
             s_play_space_pending = true;
             s_pb_state = PB_STATE_INTER_WORD_GAP;
-            s_elem_start_count = cur_count;
             return CW_ACTION_NONE;
         }
         // Update TX centerline display with the next char (respect pending space)
@@ -421,9 +424,10 @@ CW_Action_t CW_PlaybackHandleState(void)
     case PB_STATE_INTER_WORD_GAP: {
         const uint16_t elapsed = timer_millis_low16_since(s_elem_start_count);
         if (elapsed >= s_word_gap_count) {
-            // advance to next char
+            // Word gap done - advance to char-gap state with the same origin
+            // preserved. elapsed (>=7) already exceeds s_char_gap_count (3), so
+            // the next char is read immediately with no extra wait.
             s_pb_state = PB_STATE_INTER_CHAR_GAP;
-            s_elem_start_count = cur_count;
         }
         return CW_ACTION_NONE;
         break;
