@@ -226,10 +226,21 @@ static void CW_KeyerInit()
     }
 
     bool uses_port_ground = (key_input_mode & CW_KEY_FLAG_PORT_GROUND) != 0;
-    bool uses_port_ring   = (key_input_mode & CW_KEY_FLAG_PORT_RING) != 0;
     bool uses_adc         = (key_input_mode & CW_KEY_FLAG_ADC) != 0;
 
-    CW_ConfigurePortRing(uses_port_ring);
+    // Handkey-family modes have no timing engine, so nothing will ever decode
+    // a fresh character into the TX display while active. Clear out whatever
+    // was left behind by a prior paddle/macro session so it can't resurface
+    // (e.g. via the post-TX holdoff window) and look like a live decode.
+    if (key_input_mode & CW_KEY_FLAG_NO_KEYER) {
+        CW_ClearTxDisplay();
+        gCW_TxDisplayHoldoff_10ms = 0;
+    }
+
+    // Every mode that sets PORT_RING also sets PORT_GROUND, and Port HandKey mode
+    // (PORT_GROUND without PORT_RING) also needs the ring pin configured since it
+    // treats either port contact as the key - so PORT_GROUND alone decides it.
+    CW_ConfigurePortRing(uses_port_ground);
     CW_ConfigureADCforCECPaddles(uses_adc);
     if (!uses_adc && uses_port_ground)
         CW_ConfigurePortGround(true);
@@ -473,8 +484,10 @@ bool CW_CheckKeyerInputs(uint8_t new_mode)
     CW_KeyerDeinit();
 
     // Determine if we need to configure port pins for this mode (use bit flags)
+    // PORT_GROUND alone decides whether the ring pin needs checking too: every
+    // PORT_RING mode also sets PORT_GROUND, and Port HandKey mode treats either
+    // port contact as the key.
     bool uses_port_ground = (new_mode & CW_KEY_FLAG_PORT_GROUND);
-    bool uses_port_ring = (new_mode & CW_KEY_FLAG_PORT_RING);
     bool uses_adc = (new_mode & CW_KEY_FLAG_ADC);
 
     // Handkey mode without port ground doesn't need further validation
@@ -485,7 +498,7 @@ bool CW_CheckKeyerInputs(uint8_t new_mode)
     }
 
     // Button-only modes don't need validation (no port pins to check)
-    if (!uses_port_ground && !uses_port_ring && !uses_adc) {
+    if (!uses_port_ground && !uses_adc) {
         return true;
     }
     
@@ -500,13 +513,7 @@ bool CW_CheckKeyerInputs(uint8_t new_mode)
         UART_Send("Configuring port ground for CW keyer check\r\n", 44);
 #endif
         CW_ConfigurePortGround(true);
-    }
-    if( uses_port_ring) {
-#if CW_KEYER_DEBUG
-        UART_Send("Configuring port ring for CW keyer check\r\n", 42);
-#endif
         CW_ConfigurePortRing(true);
-        
     } else if(uses_adc) {
 #if CW_KEYER_DEBUG
         UART_Send("Configuring ADC for CW keyer check\r\n", 38);
@@ -587,6 +594,12 @@ CW_Action_t ptt_action(void)
         bool tip = false, ring = false;
         CW_ReadADCkeys(&tip, &ring);
         ptt = tip || ring;
+    } else if (gEeprom.CW_KEY_INPUT & CW_KEY_FLAG_PORT_GROUND) {
+        // Port HandKey: either port contact (tip or ring) acts as a straight key.
+        // (Only reached for NO_KEYER modes - see the caller in CW_HandleState.)
+        bool tip = false, ring = false;
+        CW_ReadKeysForMode(gEeprom.CW_KEY_INPUT, &tip, &ring);
+        ptt = tip || ring;
     } else
     {    // Read PTT button (PC5) - active low
         ptt = !(GPIOC->DATA & (1U << GPIOC_PIN_PTT));
@@ -660,23 +673,20 @@ static CW_Action_t CW_HandleBugState(void)
         if (s_bug_after_dah && in.dit_rise) {
             s_bug_dit_memory = true;
         }
-        if (!in.dit && !s_bug_after_dah && !s_bug_dit_memory) {
-            // Dit released during gap - no next element, start the char gap
-            s_bug_phase_start = now;
-            s_bug_state = BUG_STATE_CHAR_GAP;
+        if (timer_millis_low16_since(s_bug_phase_start) < s_gap_count) {
+            // Let the gap complete before deciding what to do next, so a dit
+            // paddle glitching open mid-gap can't cut the run short
             return CW_ACTION_NONE;
         }
-        if (timer_millis_low16_since(s_bug_phase_start) >= s_gap_count) {
-            s_bug_after_dah = false;
-            if (in.dit || s_bug_dit_memory) {
-                s_bug_dit_memory = false;
-                s_bug_phase_start = now;
-                s_bug_state = BUG_STATE_DIT_ELEMENT;
-                return CW_ACTION_CARRIER_ON;
-            }
-            // nothing after the dah: the char gap keeps timing from the dah's release
-            s_bug_state = BUG_STATE_CHAR_GAP;
+        s_bug_phase_start = now;
+        s_bug_after_dah = false;
+        if (in.dit || s_bug_dit_memory) {
+            s_bug_dit_memory = false;
+            s_bug_state = BUG_STATE_DIT_ELEMENT;
+            return CW_ACTION_CARRIER_ON;
         }
+        // Released by the end of the full gap - no next element, start the char gap
+        s_bug_state = BUG_STATE_CHAR_GAP;
         return CW_ACTION_NONE;
 
     case BUG_STATE_DAH_HOLD:

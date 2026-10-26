@@ -167,8 +167,16 @@ void CW_EnunciateStop(void)
     }
     else
     {
-        BK4819_WriteRegister(BK4819_REG_70, 0);
-        BK4819_WriteRegister(BK4819_REG_71, s_saved_reg71);
+        if (gRxVfo->Modulation == MODULATION_CW)
+        {   // CW never clears REG_70, which pops: leave tone1 enabled with a zero
+            // frequency word, as cwapp's sidetone and BK4819_SetupSquelch do
+            BK4819_SetScrambleFrequencyControlWord(0);
+        }
+        else
+        {
+            BK4819_WriteRegister(BK4819_REG_70, 0);
+            BK4819_WriteRegister(BK4819_REG_71, s_saved_reg71);
+        }
 
         // AF can't go ALAM -> MUTE (BK4819_SetAF skips it), so always rebuild
         // the RX demod; the speaker amp below decides whether it's heard

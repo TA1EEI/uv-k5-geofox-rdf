@@ -713,18 +713,10 @@ static void CheckRadioInterrupts(void)
 #endif
 
 		if (interrupts.sqlLost) {
-#ifdef ENABLE_CW_MODULATOR
-			// When monitor mode is off for CW/USB, the noise floor in the CW/SSB
-			// RX path often exceeds the squelch threshold, so the BK4819 fires
-			// sqlLost immediately. Suppress it here so audio stays muted and
-			// gCurrentFunction stays in FOREGROUND rather than RECEIVE/INCOMING.
-			if (!((gRxVfo->Modulation == MODULATION_CW ||
-			       gRxVfo->Modulation == MODULATION_USB) && !gMonitor))
-#endif
-			{
-				g_SquelchLost = true;
-				BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
-			}
+			// CW/USB no longer drop this with monitor off: their squelch is RSSI-only
+			// (RADIO_ConfigureSquelchAndOutputPower), so the noise floor doesn't trip it
+			g_SquelchLost = true;
+			BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, true);
 		}
 
 		if (interrupts.sqlFound) {
@@ -970,6 +962,19 @@ void APP_Update(void)
 		if (gRxIdleMode)
 		{
 			BK4819_Conditional_RX_TurnOn_and_GPIO6_Enable();
+
+			// Drain any interrupt latched while RX was powering back up from
+			// sleep (AGC/RSSI settling can trip a spurious SQUELCH_LOST).
+			// Mirrors the flush RADIO_SetupRegisters does before re-arming
+			// squelch, which is why dual watch (always goes through
+			// RADIO_SetupRegisters on every wake) doesn't see this glitch but a
+			// plain wake here did. REG_3F (interrupt enable) isn't touched by
+			// sleep/wake, so if a real signal is still present the BK4819 will
+			// re-latch a fresh SQUELCH_LOST once we're done draining.
+			while (BK4819_ReadRegister(BK4819_REG_0C) & 1u) {
+				BK4819_WriteRegister(BK4819_REG_02, 0);
+				SYSTEM_DelayMs(1);
+			}
 
 #ifdef ENABLE_VOX
 			if (gEeprom.VOX_SWITCH)

@@ -304,6 +304,19 @@ volatile uint16_t gCountdownToPlayNextVoice_10ms;
 volatile bool     gFlagPlayQueuedVoice;
 
 
+// Whether a voice clip has to mute the BK4819's RX audio while it plays (and rebuild
+// the demod after). FM and AM are already muted by the chip while squelch is closed,
+// but CW/USB keep BASEBAND2 running then (the RSSI squelch needs it) and rely on the
+// speaker amp being off, which the clip turns on, so they need it either way.
+static bool VoiceMutesRx(void)
+{
+	return FUNCTION_IsRx()
+#ifdef ENABLE_CW_MODULATOR
+		|| gRxVfo->Modulation == MODULATION_CW
+#endif
+		|| gRxVfo->Modulation == MODULATION_USB;
+}
+
 static void AUDIO_PlayVoice(uint8_t VoiceID)
 {
 	unsigned int i;
@@ -346,7 +359,7 @@ void AUDIO_PlaySingleVoice(bool bFlag)
 		Delay    = VoiceClipLengthEnglish[VoiceID];
 		VoiceID += VOICE_ID_ENG_BASE;
 
-		if (FUNCTION_IsRx())   // 1of11
+		if (VoiceMutesRx())   // 1of11
 			BK4819_SetAF(BK4819_AF_MUTE);
 
 		#ifdef ENABLE_FMRADIO
@@ -370,7 +383,7 @@ void AUDIO_PlaySingleVoice(bool bFlag)
 		{
 			SYSTEM_DelayMs(Delay * 10);
 
-			if (FUNCTION_IsRx())	// 1of11
+			if (VoiceMutesRx())	// 1of11
 				RADIO_SetModulation(gRxVfo->Modulation);
 
 			#ifdef ENABLE_FMRADIO
@@ -506,7 +519,7 @@ void AUDIO_PlayQueuedVoice(void)
 		}
 	}
 
-	if (FUNCTION_IsRx())
+	if (VoiceMutesRx())
 	{
 		RADIO_SetModulation(gRxVfo->Modulation); // 1of11
 	}
