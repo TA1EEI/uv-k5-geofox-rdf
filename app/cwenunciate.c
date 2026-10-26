@@ -37,6 +37,7 @@
 #include "audio.h"
 #include "driver/bk4819.h"
 #include "driver/bk4819-regs.h"
+#include "driver/keyboard.h"
 #include "driver/system.h"
 #include "driver/timer.h"
 #include "functions.h"
@@ -44,6 +45,7 @@
 #include "radio.h"
 #include "settings.h"
 
+static bool     s_pending     = false;  // queued, waiting for the triggering key to be released
 static bool     s_active      = false;
 static bool     s_tone_on     = false;
 static uint16_t s_phase_start = 0;  // millis when the current element/gap began
@@ -81,7 +83,7 @@ bool CW_EnunciateIsActive(void)
 
 void CW_EnunciateStart(void)
 {
-    if (s_active || gEnunciateMode != ENUNCIATE_CW || gVoiceWriteIndex == 0)
+    if (s_active || s_pending || gEnunciateMode != ENUNCIATE_CW || gVoiceWriteIndex == 0)
         return;
 
     if (!gEeprom.VOICE_PROMPT
@@ -94,6 +96,14 @@ void CW_EnunciateStart(void)
         return;
     }
 
+    // Don't touch the audio yet. A long press runs its action while the key is held and
+    // defers the channel save to the release, which reconfigures the radio again
+    // (RADIO_SetupRegisters) and would clobber our tone setup mid-message.
+    s_pending = true;
+}
+
+static void BeginPlayback(void)
+{
     s_dit_ms      = 1200U / gEeprom.CW_KEY_WPM;  // PARIS: 50 dits per word
     s_saved_reg71 = BK4819_ReadRegister(BK4819_REG_71);
 
@@ -132,22 +142,34 @@ void CW_EnunciateStart(void)
 
 void CW_EnunciateStop(void)
 {
+    if (s_pending)
+    {   // nothing was set up yet, just drop the message
+        s_pending = false;
+        ClearQueue();
+        return;
+    }
+
     if (!s_active)
         return;
 
     s_active = false;
-
-    BK4819_WriteRegister(BK4819_REG_70, 0);
-    BK4819_WriteRegister(BK4819_REG_71, s_saved_reg71);
 
 #ifdef ENABLE_FMRADIO
     if (gFmRadioMode)
         BK1080_Mute(false);
 #endif
 
-    // CPO owns the audio path: it stays in ALAM with the speaker on for its sidetone
-    if (!gCW_CpoActive)
+    if (gCW_CpoActive)
+    {   // CPO owns the audio path: leave it in its own idle sidetone state (ALAM, tone
+        // generator still enabled, frequency word 0, speaker on), as cwapp's CARRIER_OFF
+        // does. Clearing REG_70 in ALAM with a non-zero REG_71 lets RX audio through.
+        BK4819_SetScrambleFrequencyControlWord(0);
+    }
+    else
     {
+        BK4819_WriteRegister(BK4819_REG_70, 0);
+        BK4819_WriteRegister(BK4819_REG_71, s_saved_reg71);
+
         // AF can't go ALAM -> MUTE (BK4819_SetAF skips it), so always rebuild
         // the RX demod; the speaker amp below decides whether it's heard
         RADIO_SetModulation(gRxVfo->Modulation);
@@ -168,6 +190,23 @@ void CW_EnunciateStop(void)
 
 void CW_EnunciateUpdate(void)
 {
+    if (s_pending)
+    {
+        if (gCurrentFunction == FUNCTION_TRANSMIT || gPttIsPressed)
+        {
+            CW_EnunciateStop();
+            return;
+        }
+
+        // gKeyReading1 clears only after the release ProcessKey(), including any
+        // reconfigure it triggers, has returned
+        if (gKeyReading1 != KEY_INVALID)
+            return;
+
+        s_pending = false;
+        BeginPlayback();
+    }
+
     if (!s_active)
         return;
 

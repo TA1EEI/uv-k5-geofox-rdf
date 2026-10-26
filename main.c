@@ -153,9 +153,13 @@ void Main(void)
 #ifdef ENABLE_ENUNCIATE
 	else if (BootMode == BOOT_MODE_BLIND)
 	{	// guaranteed usable radio for a blind operator, whatever was configured before:
-		// prompts on (also gates CW enunciation), side 2 short press reads the display
+		// prompts on (also gates CW enunciation), side 2 short press reads the display,
+		// side 2 long press opens the CW speed popup, which sends a '5' at each new speed
 		gEeprom.VOICE_PROMPT             = true;
 		gEeprom.KEY_2_SHORT_PRESS_ACTION = ACTION_OPT_SAY_LABEL;
+#ifdef ENABLE_CW_MODULATOR
+		gEeprom.KEY_2_LONG_PRESS_ACTION  = ACTION_OPT_CW_SPEED;
+#endif
 		// save now: gRequestSaveSettings is only serviced on a key press
 		SETTINGS_SaveSettings();
 	}

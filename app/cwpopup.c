@@ -19,7 +19,6 @@
 #include "app/cwkeyer.h"
 #include "app/cwpopup.h"
 #include "audio.h"
-#include "external/printf/printf.h"
 #include "functions.h"
 #include "misc.h"
 #include "settings.h"
@@ -61,10 +60,9 @@ static void Show(void)
 	gUpdateDisplay = true;
 
 #ifdef ENABLE_CW_ENUNCIATE
-	// say the speed, for when the screen can't be seen (only plays with VOICE on)
-	char text[4];
-	sprintf(text, "%u", gEeprom.CW_KEY_WPM);
-	AUDIO_SetCWEnunciate(text);
+	// a '5' (five dits) sent at the current speed, so the speed can be judged by ear
+	// (only plays with VOICE on); while up/down auto-repeats it waits for the release
+	AUDIO_SetCWEnunciate("5");
 	gAnotherVoiceID = (VOICE_ID_t)0xFE;
 #endif
 }
@@ -134,6 +132,18 @@ void CW_Popup_Tick10ms(void)
 		return;
 
 	// PTT in any mode closes it like keying does
-	if (gCurrentFunction == FUNCTION_TRANSMIT || --s_10ms == 0)
+	if (gCurrentFunction == FUNCTION_TRANSMIT) {
+		CW_Popup_Close();
+		return;
+	}
+
+#ifdef ENABLE_CW_ENUNCIATE
+	// with prompts on the screen may not be seen, so it stays open until a key or keying
+	// closes it, and the speed can be stepped at leisure
+	if (gEeprom.VOICE_PROMPT)
+		return;
+#endif
+
+	if (--s_10ms == 0)
 		CW_Popup_Close();
 }

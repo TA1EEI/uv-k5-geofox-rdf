@@ -26,7 +26,7 @@
 
 #include <stdbool.h>
 
-// Begin playing the queue. Called by APP via the gAnotherVoiceID handoff.
+// Begin playing the queue (once no key is held). Called by APP via the gAnotherVoiceID handoff.
 // Does nothing (and empties the queue) if the VOICE setting is off,
 // the radio is transmitting, or the CW keyer / macro playback is busy.
 void CW_EnunciateStart(void);

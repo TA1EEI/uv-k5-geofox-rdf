@@ -48,6 +48,7 @@ void CPO_Enter(void)
 	s_needs_redraw = true;
 	gRequestDisplayScreen = DISPLAY_CPO;
 	gUpdateDisplay = true;
+	gUpdateStatus = true;	// hide BKIN while in CPO
 	gMonitor = false;
     wpm_changed = false;
     gCW_FlashlightSending = s_flashlight_sending;
