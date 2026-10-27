@@ -21,8 +21,8 @@ This firmware only supports the Quansheng UVK5 **V1** radio, as per the original
 
 To make room for the CW features, some of the egzumer mods and radio functions have been disabled:
 
-- _disabled_ FM broadcast radio, DTMF dialing/contacts, VOX, NOAA, Air Copy, TX audio bar, low-level backlight, Spectrum
-- Most of these are removed to save program flash space. DTMF contacts are removed specifically to reuse that section of eeprom to store CW message text
+- _disabled_ FM broadcast radio, DTMF, VOX, NOAA, Air Copy, TX audio bar, low-level backlight, Spectrum
+- Most of these are removed to save program flash space. DTMF contacts are removed specifically to reuse that section of eeprom to store CW message text.
 
 This code continues to be available under the Apache 2.0 license.
 
